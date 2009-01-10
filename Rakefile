@@ -19,7 +19,7 @@ end
 desc 'Start an IRB session with all necessary files required.'
 task :shell do |t|
   chdir File.dirname(__FILE__)
-  exec 'irb -I lib/ -I lib/awsum -r rubygems'
+  exec 'irb -I lib/ -I lib/awsum -r rubygems -r awsum'
 end
 
 desc 'Generate documentation.'

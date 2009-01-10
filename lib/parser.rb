@@ -2,9 +2,9 @@ require 'rexml/document'
 
 module Awsum
   class Parser
-    def parse(response)
-      xml_text = response.body
+    def parse(xml_text)
       REXML::Document.parse_stream(xml_text, self)
+      result
     end
 
     def result

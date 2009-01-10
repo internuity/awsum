@@ -40,7 +40,10 @@ module Awsum
       http.use_ssl = true
       http.verify_mode = OpenSSL::SSL::VERIFY_NONE
 
+      puts "URL: #{url}" if ENV['DEBUG']
       response = http.send_request('GET', url.request_uri, nil, headers)
+      puts "Response:\n#{response.body}" if ENV['DEBUG']
+      response.body
     end
 
     def array_to_params(arr, param_name)

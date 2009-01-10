@@ -1,7 +1,7 @@
 module Awsum
   class Ec2 < Awsum::Requestable
     class Image
-      attr_reader :id, :location, :state, :owner, :public, :architecture, :type, :kernel_id, :ram_disk_id
+      attr_reader :id, :location, :state, :owner, :public, :architecture, :type, :kernel_id, :ramdisk_id
 
       def initialize(id, location, state, owner, public, architecture, type, kernel_id, ram_disk_id)
         @id = id 
@@ -12,7 +12,11 @@ module Awsum
         @architecture = architecture 
         @type = type 
         @kernel_id = kernel_id 
-        @ram_disk_id = ram_disk_id
+        @ramdisk_id = ram_disk_id
+      end
+
+      def public?
+        @public
       end
     end
 
@@ -45,8 +49,8 @@ module Awsum
                           @current['imageId'], 
                           @current['imageLocation'], 
                           @current['imageState'], 
-                          @current['OwnerId'], 
-                          @current['isPublic'], 
+                          @current['imageOwnerId'], 
+                          @current['isPublic'] == 'true', 
                           @current['architecture'], 
                           @current['imageType'],
                           @current['kernelId'],
