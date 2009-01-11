@@ -26,15 +26,15 @@ module Awsum
       def initialize
         @images = []
         @text = nil
-        @lists = []
+        @stack = []
       end
 
       def tag_start(tag, attributes)
         case tag
           when 'imagesSet'
-            @lists << 'imagesSet'
+            @stack << 'imagesSet'
           when 'item'
-            case @lists[-1]
+            case @stack[-1]
               when 'imagesSet'
                 @current = {}
                 @text = ''
@@ -43,7 +43,7 @@ module Awsum
                 @text = ''
             end
           when 'productCodes'
-            @lists << 'productCodes'
+            @stack << 'productCodes'
           else
             #no-op
         end
@@ -58,9 +58,9 @@ module Awsum
           when 'DescribeImagesResponse', 'requestId'
             #no-op
           when 'imagesSet', 'productCodes'
-            @lists.pop
+            @stack.pop
           when 'item'
-            case @lists[-1]
+            case @stack[-1]
               when 'imagesSet'
                 @images << Image.new(
                               @current['imageId'], 
@@ -81,7 +81,8 @@ module Awsum
             @product_codes << @text.strip
           else
             unless @text.nil?
-              @current[tag] = @text.strip
+              text = @text.strip
+              @current[tag] = (text == '' ? nil : text)
               @text = ''
             end
         end

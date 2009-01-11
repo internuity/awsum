@@ -15,7 +15,7 @@ module Awsum
       params = standard_options.merge(params)
 
       #Put parameters into query string format
-      params_string = params.sort{|a,b| a[0] <=> b[0].to_s}.collect{|key, val| "#{CGI::escape(key)}=#{CGI::escape(val.to_s)}"}.join('&')
+      params_string = params.delete_if{|k,v| v.nil?}.sort{|a,b| a[0] <=> b[0].to_s}.collect{|key, val| "#{CGI::escape(key)}=#{CGI::escape(val.to_s)}"}.join('&')
       params_string.gsub!('+', '%20')
 
       #Create request signature
@@ -45,6 +45,7 @@ module Awsum
     end
 
     def array_to_params(arr, param_name)
+      arr = [arr] unless arr.is_a?(Array)
       params = {}
       arr.each_with_index do |value,i|
         params["#{param_name}.#{i+1}"] = value
