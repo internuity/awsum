@@ -1,5 +1,5 @@
 module Awsum
-  class Ec2 < Awsum::Requestable
+  class Ec2
     class Image
       attr_reader :id, :location, :state, :owner, :public, :architecture, :type, :kernel_id, :ramdisk_id, :platform, :product_codes
 

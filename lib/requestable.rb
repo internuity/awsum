@@ -2,9 +2,7 @@ require 'net/https'
 require 'uri'
 
 module Awsum
-  class Requestable
-    API_VERSION = '2008-12-01'
-    SIGNATURE_VERSION = 2
+  module Requestable
 
     def send_request(params)
       standard_options = {

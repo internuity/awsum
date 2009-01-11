@@ -4,7 +4,8 @@ require 'openssl'
 require 'ec2/image'
 
 module Awsum
-  class Ec2 < Awsum::Requestable
+  class Ec2
+    include Awsum::Requestable
 
     def host
       'ec2.amazonaws.com'

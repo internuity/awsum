@@ -13,4 +13,7 @@ require 'ec2/ec2'
 module Awsum
   
   VERSION = "0.1"
+
+  API_VERSION = '2008-12-01'
+  SIGNATURE_VERSION = 2
 end
