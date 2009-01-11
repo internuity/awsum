@@ -1,17 +1,77 @@
 <?xml version="1.0"?>
 <DescribeImagesResponse xmlns="http://ec2.amazonaws.com/doc/2008-12-01/">
-    <requestId>11111111-1111-1111-1111-111111111111</requestId>
-    <imagesSet>    
+    <requestId>c0b11155-cfab-45f0-99ba-5607ea309135</requestId>
+    <imagesSet>
         <item>
-            <imageId>ami-be3adfd7</imageId>
-            <imageLocation>ec2-public-images/fedora-8-i386-base-v1.04.manifest.xml</imageLocation>
+            <imageId>aki-0d9f7b64</imageId>
+            <imageLocation>oracle_linux_kernels/2.6.18-53.1.13.9.1.el5xen/vmlinuz-2.6.18-53.1.13.9.1.el5xen.manifest.xml</imageLocation>
             <imageState>available</imageState>
-            <imageOwnerId>206029621532</imageOwnerId>
-            <isPublic>false</isPublic>
+            <imageOwnerId>725966715235</imageOwnerId>
+            <isPublic>true</isPublic>
+            <architecture>x86_64</architecture>
+            <imageType>kernel</imageType>
+        </item>
+        <item>
+            <imageId>aki-25de3b4c</imageId>
+            <imageLocation>redhat-cloud/RHEL-5-Server/5.1/i386/kernels/kernel-2.6.18-53.1.4.el5xen.manifest.xml</imageLocation>
+            <imageState>available</imageState>
+            <imageOwnerId>432018295444</imageOwnerId>
+            <isPublic>true</isPublic>
+            <productCodes>
+                <item>
+                    <productCode>54DBF944</productCode>
+                </item>
+            </productCodes>
+            <architecture>i386</architecture>
+            <imageType>kernel</imageType>
+        </item>
+        <item>
+            <imageId>ami-005db969</imageId>
+            <imageLocation>alestic-64/ubuntu-8.04-hardy-base-64-20081222.manifest.xml</imageLocation>
+            <imageState>available</imageState>
+            <imageOwnerId>063491364108</imageOwnerId>
+            <isPublic>true</isPublic>
+            <architecture>x86_64</architecture>
+            <imageType>machine</imageType>
+            <kernelId>aki-b51cf9dc</kernelId>
+            <ramdiskId>ari-b31cf9da</ramdiskId>
+        </item>
+        <item>
+            <imageId>ami-0456b26d</imageId>
+            <imageLocation>ec2-public-windows-images/Server2003r2-i386-Win-v1.03.manifest.xml</imageLocation>
+            <imageState>available</imageState>
+            <imageOwnerId>amazon</imageOwnerId>
+            <isPublic>true</isPublic>
             <architecture>i386</architecture>
             <imageType>machine</imageType>
-            <kernelId>aki-4438dd2d</kernelId>
-            <ramdiskId>ari-4538dd2c</ramdiskId>
+            <platform>windows</platform>
+        </item>
+        <item>
+            <imageId>ami-215fba48</imageId>
+            <imageLocation>ec2-public-images/fedora-core4-base-v1.07.manifest.xml</imageLocation>
+            <imageState>available</imageState>
+            <imageOwnerId>amazon</imageOwnerId>
+            <isPublic>true</isPublic>
+            <architecture>i386</architecture>
+            <imageType>machine</imageType>
+        </item>
+        <item>
+            <imageId>ami-22b6534b</imageId>
+            <imageLocation>ec2-public-images/fedora-core4-mysql.manifest.xml</imageLocation>
+            <imageState>available</imageState>
+            <imageOwnerId>amazon</imageOwnerId>
+            <isPublic>true</isPublic>
+            <architecture>i386</architecture>
+            <imageType>machine</imageType>
+        </item>
+        <item>
+            <imageId>ami-26b6534f</imageId>
+            <imageLocation>ec2-public-images/developer-image.manifest.xml</imageLocation>
+            <imageState>available</imageState>
+            <imageOwnerId>amazon</imageOwnerId>
+            <isPublic>true</isPublic>
+            <architecture>i386</architecture>
+            <imageType>machine</imageType>
         </item>
     </imagesSet>
 </DescribeImagesResponse>

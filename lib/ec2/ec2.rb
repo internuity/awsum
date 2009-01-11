@@ -33,13 +33,13 @@ module Awsum
 
       response = send_request(params)
       parser = Awsum::Ec2::ImageParser.new
-      parser.parse(response)
-      parser.result
+      parser.parse(response.body)
     end
 
     # Retrieve a single image
     def image(image_id)
-      images :image_ids => [image_id]
+      arr = images(:image_ids => [image_id])
+      arr.size > 0 ? arr[0] : nil
     end
   end
 end

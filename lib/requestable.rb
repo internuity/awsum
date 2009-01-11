@@ -43,7 +43,7 @@ module Awsum
       puts "URL: #{url}" if ENV['DEBUG']
       response = http.send_request('GET', url.request_uri, nil, headers)
       puts "Response:\n#{response.body}" if ENV['DEBUG']
-      response.body
+      response
     end
 
     def array_to_params(arr, param_name)
