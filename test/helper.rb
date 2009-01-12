@@ -17,7 +17,5 @@ $LOAD_PATH << File.join(ROOT, 'lib', 'awsum')
 require File.join(ROOT, 'lib', 'awsum.rb')
 
 def load_fixture(fixture_name)
-  File.open(File.join(File.dirname(__FILE__), "fixtures/#{fixture_name}.xml")) do |file|
-    return file.read
-  end
+  File.read File.join(File.dirname(__FILE__), "fixtures/#{fixture_name}.xml")
 end
