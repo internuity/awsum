@@ -8,10 +8,6 @@ module Awsum
   class Ec2
     include Awsum::Requestable
 
-    def host
-      'ec2.amazonaws.com'
-    end
-
     def initialize(access_key, secret_key)
       @access_key = access_key
       @secret_key = secret_key
@@ -115,7 +111,13 @@ module Awsum
       params.merge!(array_to_params(instance_ids, 'InstanceId'))
 
       response = send_request(params)
-      response.is_a?(HTTPSuccess)
+      response.is_a?(Net::HTTPSuccess)
+    end
+
+private
+    #The host to make all requests against
+    def host
+      'ec2.amazonaws.com'
     end
   end
 end

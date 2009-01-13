@@ -44,8 +44,6 @@ module Awsum
             end
           when 'productCodes'
             @stack << 'productCodes'
-          else
-            #no-op
         end
       end
 

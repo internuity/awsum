@@ -76,6 +76,11 @@
                     <placement>
                         <availabilityZone>us-east-1b</availabilityZone>
                     </placement>
+                    <productCodes>
+                        <item>
+                            <productCode>54DBF944</productCode>
+                        </item>
+                    </productCodes>
                 </item>
             </instancesSet>
         </item>

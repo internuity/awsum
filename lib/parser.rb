@@ -7,21 +7,11 @@ module Awsum
       result
     end
 
-    def result
-    end
-
-    def tag_start(tag, attributes)
-      puts "tag_start: #{tag}, #{attributes.inspect}"
-    end
-
-    def text(text)
-      puts "text: #{text}"
-    end
-
-    def tag_end(tag)
-      puts "tag_end: #{tag}"
-    end
-
-    def xmldecl(*args)      ; end
+#Methods to be overridden by each Parser implementation
+    def result                      ; end
+    def tag_start(tag, attributes)  ; end
+    def text(text)                  ; end
+    def tag_end(tag)                ; end
+    def xmldecl(*args)              ; end
   end
 end

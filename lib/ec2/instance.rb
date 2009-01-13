@@ -52,8 +52,6 @@ module Awsum
               when 'productCodes'
                 @product_codes = []
             end
-          else
-            #no-op
         end
         @text = ''
       end

@@ -12,8 +12,13 @@ task :default => [:clean, :test]
 desc 'Run tests'
 Rake::TestTask.new(:test) do |t|
   t.libs << 'lib'
-  t.pattern = 'test/**/*_test.rb'
+  t.pattern = 'test/**/test_*.rb'
   t.verbose = true
+end
+
+desc 'Run code coverage'
+task :coverage do |t|
+  puts `rcov -T #{Dir.glob('test/**/test_*.rb').join(' ')}`
 end
 
 desc 'Start an IRB session with all necessary files required.'
