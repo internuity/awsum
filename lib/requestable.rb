@@ -4,6 +4,7 @@ require 'uri'
 module Awsum
   module Requestable
 
+private
     def send_request(params)
       standard_options = {
         'AWSAccessKeyId'   => @access_key,

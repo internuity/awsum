@@ -5,6 +5,8 @@ require 'ec2/image'
 require 'ec2/instance'
 
 module Awsum
+  #--
+  #TODO: Write overall class documentation with usage examples
   class Ec2
     include Awsum::Requestable
 
@@ -14,10 +16,11 @@ module Awsum
     end
 
     # Retrieve a list of available images (Maps to DescribeImages)
+    #
     # Options:
-    # * <tt>:image_ids</tt>: array of image id's, default: []
-    # * <tt>:owners</tt>: array of owner id's, default: []
-    # * <tt>:executable_by</tt>: array of user id's who have executable permission, #   default: []
+    # * <tt>:image_ids</tt> - array of image id's, default: []
+    # * <tt>:owners</tt> - array of owner id's, default: []
+    # * <tt>:executable_by</tt> - array of user id's who have executable permission, #   default: []
     def images(options = {})
       options = {:image_ids => [], :owners => [], :executable_by => []}.merge(options)
       action = 'DescribeImages'
@@ -41,17 +44,18 @@ module Awsum
     end
 
     # Launch an ec2 instance
+    #
     # Options:
-    # * <tt>:min</tt>: The minimum number of instances to launch. Default: 1
-    # * <tt>:max</tt>: The maximum number of instances to launch. Default: 1
-    # * <tt>:key_name</tt>: The name of the key pair with which to launch instances
-    # * <tt>:security_groups</tt>: The names of security groups to associate launched instances with
-    # * <tt>:user_data</tt>: User data made available to instances (Note: Must be 16K or less, will be base64 encoded by Awsum)
-    # * <tt>:instance_type</tt>: The size of the instances to launch, can be one of [m1.small, m1.large, m1.xlarge, c1.medium, c1.xlarge], default is m1.small
-    # * <tt>:availability_zone</tt>: The name of the availability zone to launch this instance in
-    # * <tt>:kernel_id</tt>: The ID of the kernel with which to launch instances
-    # * <tt>:ramdisk_id</tt>: The ID of the RAM disk with which to launch instances
-    # * <tt>:block_device_map</tt>: A 'hash' of mappings. E.g. {'instancestore0' => 'sdb'}
+    # * <tt>:min</tt> - The minimum number of instances to launch. Default: 1
+    # * <tt>:max</tt> - The maximum number of instances to launch. Default: 1
+    # * <tt>:key_name</tt> - The name of the key pair with which to launch instances
+    # * <tt>:security_groups</tt> - The names of security groups to associate launched instances with
+    # * <tt>:user_data</tt> - User data made available to instances (Note: Must be 16K or less, will be base64 encoded by Awsum)
+    # * <tt>:instance_type</tt> - The size of the instances to launch, can be one of [m1.small, m1.large, m1.xlarge, c1.medium, c1.xlarge], default is m1.small
+    # * <tt>:availability_zone</tt> - The name of the availability zone to launch this instance in
+    # * <tt>:kernel_id</tt> - The ID of the kernel with which to launch instances
+    # * <tt>:ramdisk_id</tt> - The ID of the RAM disk with which to launch instances
+    # * <tt>:block_device_map</tt> - A 'hash' of mappings. E.g. {'instancestore0' => 'sdb'}
     def run_instances(image_id, options = {})
       options = {:min => 1, :max => 1}.merge(options)
       action = 'RunInstances'
@@ -83,6 +87,7 @@ module Awsum
       parser.parse(response.body)
     end
 
+    #Retrieve the information on a number of instances
     def instances(instance_ids = [])
       action = 'DescribeInstances'
       params = {
@@ -95,6 +100,7 @@ module Awsum
       parser.parse(response.body)
     end
 
+    #Retrieve the information on a single instance
     def instance(instance_id)
       arr = instances([instance_id])
       arr.size > 0 ? arr[0] : nil

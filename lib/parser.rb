@@ -7,6 +7,7 @@ module Awsum
       result
     end
 
+#--
 #Methods to be overridden by each Parser implementation
     def result                      ; end
     def tag_start(tag, attributes)  ; end
