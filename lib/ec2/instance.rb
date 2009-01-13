@@ -5,7 +5,8 @@ module Awsum
     class Instance
       attr_reader :id, :image_id, :type, :state, :dns_name, :private_dns_name, :key_name, :kernel_id, :launch_time, :placement, :product_codes, :ramdisk_id, :reason, :launch_index
 
-      def initialize(id, image_id, type, state, dns_name, private_dns_name, key_name, kernel_id, launch_time, placement, product_codes, ramdisk_id, reason, launch_index)
+      def initialize(ec2, id, image_id, type, state, dns_name, private_dns_name, key_name, kernel_id, launch_time, placement, product_codes, ramdisk_id, reason, launch_index)
+        @ec2 = ec2
         @id = id
         @image_id = image_id
         @type = type
@@ -21,10 +22,16 @@ module Awsum
         @reason = reason
         @launch_index = launch_index
       end
+
+      #Terminates this instance
+      def terminate
+        @ec2.terminate_instances(id)
+      end
     end
 
     class InstanceParser < Awsum::Parser
-      def initialize
+      def initialize(ec2)
+        @ec2 = ec2
         @instances = []
         @text = nil
         @stack = []
@@ -70,6 +77,7 @@ module Awsum
             case @stack[-1]
               when 'instancesSet'
                 @instances << Instance.new(
+                                @ec2,
                                 @current['instanceId'], 
                                 @current['imageId'], 
                                 @current['instanceType'], 

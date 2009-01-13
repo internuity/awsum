@@ -4,8 +4,9 @@ class ImagesTest < Test::Unit::TestCase
   context "ImageParser:" do
     context "Parsing the result of a call to DescribeImages" do
       setup {
+        ec2 = Awsum::Ec2.new('abc', 'xyz')
         xml = load_fixture('ec2/images')
-        parser = Awsum::Ec2::ImageParser.new
+        parser = Awsum::Ec2::ImageParser.new(ec2)
         @result = parser.parse(xml)
       }
 

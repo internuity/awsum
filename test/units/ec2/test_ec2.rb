@@ -34,6 +34,25 @@ class ImagesTest < Test::Unit::TestCase
         assert_equal Awsum::Ec2::Image, @result.class
       end
     end
+
+    context "an image" do
+      setup {
+        xml = load_fixture('ec2/image')
+        response = stub('Http Response', :body => xml)
+        @ec2.expects(:send_request).returns(response)
+
+        @image = @ec2.image 'ari-f9c22690'
+      }
+
+      should "be able to create an instance" do
+        xml = load_fixture('ec2/instance')
+        response = stub('Http Response', :body => xml)
+        @ec2.expects(:send_request).returns(response)
+
+        instances = @image.run
+        assert_equal Awsum::Ec2::Instance, instances[0].class
+      end
+    end
   end
 
   context "Instances: " do
@@ -109,6 +128,25 @@ class ImagesTest < Test::Unit::TestCase
 
       should "return true" do
         assert @result
+      end
+    end
+
+    context "an instance" do
+      setup {
+        xml = load_fixture('ec2/instance')
+        response = stub('Http Response', :body => xml)
+        @ec2.expects(:send_request).returns(response)
+
+        @instance = @ec2.instance 'i-3f1cc856'
+      }
+
+      should "be able to terminate" do
+        xml = load_fixture('ec2/terminate_instances')
+        response = stub('Http Response', :body => xml)
+        response.expects(:is_a?).returns(true)
+        @ec2.expects(:send_request).returns(response)
+
+        assert @instance.terminate
       end
     end
   end

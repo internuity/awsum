@@ -3,7 +3,8 @@ module Awsum
     class Image
       attr_reader :id, :location, :state, :owner, :public, :architecture, :type, :kernel_id, :ramdisk_id, :platform, :product_codes
 
-      def initialize(id, location, state, owner, public, architecture, type, kernel_id, ram_disk_id, platform, product_codes)
+      def initialize(ec2, id, location, state, owner, public, architecture, type, kernel_id, ram_disk_id, platform, product_codes)
+        @ec2 = ec2
         @id = id 
         @location = location 
         @state = state 
@@ -20,10 +21,29 @@ module Awsum
       def public?
         @public
       end
+
+      # launches instances of this image
+      #
+      # Options:
+      # * <tt>:min</tt> - The minimum number of instances to launch. Default: 1
+      # * <tt>:max</tt> - The maximum number of instances to launch. Default: 1
+      # * <tt>:key_name</tt> - The name of the key pair with which to launch instances
+      # * <tt>:security_groups</tt> - The names of security groups to associate launched instances with
+      # * <tt>:user_data</tt> - User data made available to instances (Note: Must be 16K or less, will be base64 encoded by Awsum)
+      # * <tt>:instance_type</tt> - The size of the instances to launch, can be one of [m1.small, m1.large, m1.xlarge, c1.medium, c1.xlarge], default is m1.small
+      # * <tt>:availability_zone</tt> - The name of the availability zone to launch this instance in
+      # * <tt>:kernel_id</tt> - The ID of the kernel with which to launch instances
+      # * <tt>:ramdisk_id</tt> - The ID of the RAM disk with which to launch instances
+      # * <tt>:block_device_map</tt> - A 'hash' of mappings. E.g. {'instancestore0' => 'sdb'}
+      def run(options = {})
+        @ec2.run_instances(id, options)
+      end
+      alias_method :launch, :run
     end
 
     class ImageParser < Awsum::Parser
-      def initialize
+      def initialize(ec2)
+        @ec2 = ec2
         @images = []
         @text = nil
         @stack = []
@@ -61,6 +81,7 @@ module Awsum
             case @stack[-1]
               when 'imagesSet'
                 @images << Image.new(
+                              @ec2,
                               @current['imageId'], 
                               @current['imageLocation'], 
                               @current['imageState'], 

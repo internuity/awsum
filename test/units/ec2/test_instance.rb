@@ -4,8 +4,9 @@ class InstancesTest < Test::Unit::TestCase
   context "InstanceParser:" do
     context "Parsing the result of a call to DescribeInstances" do
       setup {
+        ec2 = Awsum::Ec2.new('abc', 'xyz')
         xml = load_fixture('ec2/instances')
-        parser = Awsum::Ec2::InstanceParser.new
+        parser = Awsum::Ec2::InstanceParser.new(ec2)
         @result = parser.parse(xml)
       }
 
@@ -59,8 +60,9 @@ class InstancesTest < Test::Unit::TestCase
 
     context "Parsing the result of a call to RunInstances" do
       setup {
+        ec2 = Awsum::Ec2.new('abc', 'xyz')
         xml = load_fixture('ec2/run_instances')
-        parser = Awsum::Ec2::InstanceParser.new
+        parser = Awsum::Ec2::InstanceParser.new(ec2)
         @result = parser.parse(xml)
       }
 

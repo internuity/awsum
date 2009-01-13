@@ -15,10 +15,10 @@ module Awsum
       @secret_key = secret_key
     end
 
-    # Retrieve a list of available images (Maps to DescribeImages)
+    # Retrieve a list of available Images
     #
     # Options:
-    # * <tt>:image_ids</tt> - array of image id's, default: []
+    # * <tt>:image_ids</tt> - array of Image id's, default: []
     # * <tt>:owners</tt> - array of owner id's, default: []
     # * <tt>:executable_by</tt> - array of user id's who have executable permission, #   default: []
     def images(options = {})
@@ -33,17 +33,17 @@ module Awsum
       params.merge!(array_to_params(options[:executable_by], "ExecutableBy"))
 
       response = send_request(params)
-      parser = Awsum::Ec2::ImageParser.new
+      parser = Awsum::Ec2::ImageParser.new(self)
       parser.parse(response.body)
     end
 
-    # Retrieve a single image
+    # Retrieve a single Image
     def image(image_id)
       arr = images(:image_ids => [image_id])
       arr.size > 0 ? arr[0] : nil
     end
 
-    # Launch an ec2 instance
+    # Launch an ec2 Instance
     #
     # Options:
     # * <tt>:min</tt> - The minimum number of instances to launch. Default: 1
@@ -52,7 +52,7 @@ module Awsum
     # * <tt>:security_groups</tt> - The names of security groups to associate launched instances with
     # * <tt>:user_data</tt> - User data made available to instances (Note: Must be 16K or less, will be base64 encoded by Awsum)
     # * <tt>:instance_type</tt> - The size of the instances to launch, can be one of [m1.small, m1.large, m1.xlarge, c1.medium, c1.xlarge], default is m1.small
-    # * <tt>:availability_zone</tt> - The name of the availability zone to launch this instance in
+    # * <tt>:availability_zone</tt> - The name of the availability zone to launch this Instance in
     # * <tt>:kernel_id</tt> - The ID of the kernel with which to launch instances
     # * <tt>:ramdisk_id</tt> - The ID of the RAM disk with which to launch instances
     # * <tt>:block_device_map</tt> - A 'hash' of mappings. E.g. {'instancestore0' => 'sdb'}
@@ -83,12 +83,13 @@ module Awsum
       params.merge!(array_to_params(options[:security_groups], "SecurityGroup"))
 
       response = send_request(params)
-      parser = Awsum::Ec2::InstanceParser.new
+      parser = Awsum::Ec2::InstanceParser.new(self)
       parser.parse(response.body)
     end
+    alias_method :launch_instances, :run_instances
 
-    #Retrieve the information on a number of instances
-    def instances(instance_ids = [])
+    #Retrieve the information on a number of Instance(s)
+    def instances(*instance_ids)
       action = 'DescribeInstances'
       params = {
         'Action' => action
@@ -96,20 +97,20 @@ module Awsum
       params.merge!(array_to_params(instance_ids, 'InstanceId'))
 
       response = send_request(params)
-      parser = Awsum::Ec2::InstanceParser.new
+      parser = Awsum::Ec2::InstanceParser.new(self)
       parser.parse(response.body)
     end
 
-    #Retrieve the information on a single instance
+    #Retrieve the information on a single Instance
     def instance(instance_id)
       arr = instances([instance_id])
       arr.size > 0 ? arr[0] : nil
     end
 
-    # Terminates the instances 
+    # Terminates the Instance(s)
     #
     # Returns true if the terminations succeeds, false otherwise
-    def terminate_instances(instance_ids)
+    def terminate_instances(*instance_ids)
       action = 'TerminateInstances'
       params = {
         'Action' => action
