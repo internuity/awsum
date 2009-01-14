@@ -181,6 +181,21 @@ class ImagesTest < Test::Unit::TestCase
       end
     end
 
+    context "Attaching a volume" do
+      setup {
+        xml = load_fixture('ec2/attach_volume')
+        response = stub('Http Response', :body => xml)
+        response.expects(:is_a?).returns(true)
+        @ec2.expects(:send_request).returns(response)
+
+        @result = @ec2.attach_volume 'vol-44d6322d', 'i-3f1cc856', '/dev/sdb'
+      }
+
+      should "return true" do
+        assert @result
+      end
+    end
+
 #    context "a volume" do
 #      setup {
 #        xml = load_fixture('ec2/instance')

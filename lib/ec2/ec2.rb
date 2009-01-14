@@ -157,6 +157,20 @@ module Awsum
       parser.parse(response.body)[0]
     end
 
+    # Attach a volume to an instance
+    def attach_volume(volume_id, instance_id, device = '/dev/sdh')
+      action = 'AttachVolume'
+      params = {
+        'Action'     => action,
+        'VolumeId'   => volume_id,
+        'InstanceId' => instance_id,
+        'Device'     => device
+      }
+
+      response = send_request(params)
+      response.is_a?(Net::HTTPSuccess)
+    end
+
 private
     #The host to make all requests against
     def host

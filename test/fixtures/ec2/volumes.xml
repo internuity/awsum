@@ -1,15 +1,23 @@
 <?xml version="1.0"?>
 <DescribeVolumesResponse xmlns="http://ec2.amazonaws.com/doc/2008-12-01/">
-    <requestId>8a47c8ce-5822-4560-8ddc-0e3d6157309f</requestId>
+    <requestId>f4786b8a-90e8-4570-a786-1076fba0eeae</requestId>
     <volumeSet>
         <item>
             <volumeId>vol-44d6322d</volumeId>
             <size>10</size>
             <snapshotId/>
             <availabilityZone>us-east-1b</availabilityZone>
-            <status>available</status>
+            <status>in-use</status>
             <createTime>2009-01-14T03:57:08.000Z</createTime>
-            <attachmentSet/>
+            <attachmentSet>
+                <item>
+                    <volumeId>vol-44d6322d</volumeId>
+                    <instanceId>i-3f1cc856</instanceId>
+                    <device>/dev/sdb</device>
+                    <status>attached</status>
+                    <attachTime>2009-01-14T04:34:35.000Z</attachTime>
+                </item>
+            </attachmentSet>
         </item>
     </volumeSet>
 </DescribeVolumesResponse>

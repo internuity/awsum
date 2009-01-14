@@ -37,14 +37,28 @@ class VolumesTest < Test::Unit::TestCase
         end
 
         should "have the correct status" do
-          assert_equal "available", @volume.status
+          assert_equal "in-use", @volume.status
         end
 
         should "have the correct create time" do
           assert_equal '2009-01-14T03:57:08.000Z', @volume.create_time.strftime('%Y-%m-%dT%H:%M:%S.000Z')
         end
 
-#TODO: Test attachment sets
+        should "have the correct instance id" do
+          assert_equal 'i-3f1cc856', @volume.instance_id
+        end
+
+        should "have the correct device" do
+          assert_equal '/dev/sdb', @volume.device
+        end
+
+        should "have the correct attachment_status" do
+          assert_equal 'attached', @volume.attachment_status
+        end
+
+        should "have the correct attach time" do
+          assert_equal '2009-01-14T04:34:35.000Z', @volume.attach_time.strftime('%Y-%m-%dT%H:%M:%S.000Z')
+        end
       end
     end
   end
