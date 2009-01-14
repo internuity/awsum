@@ -3,6 +3,7 @@ require 'base64'
 require 'openssl'
 require 'ec2/image'
 require 'ec2/instance'
+require 'ec2/volume'
 
 module Awsum
   #--
@@ -119,6 +120,41 @@ module Awsum
 
       response = send_request(params)
       response.is_a?(Net::HTTPSuccess)
+    end
+
+    #Retrieve the information on a number of Volume(s)
+    def volumes(*volume_ids)
+      action = 'DescribeVolumes'
+      params = {
+        'Action' => action
+      }
+      params.merge!(array_to_params(volume_ids, 'VolumeId'))
+
+      response = send_request(params)
+      parser = Awsum::Ec2::VolumeParser.new(self)
+      parser.parse(response.body)
+    end
+
+    # Create a new volume
+    #
+    # Options:
+    # * <tt>:size</tt> - The size of the volume to be created (in GB) (NOTE: Required if you are not creating from a snapshot)
+    # * <tt>:snapshot_id</tt> - The snapshot id from which to create the volume
+    #
+    def create_volume(availability_zone, options = {})
+      raise ArgumentError.new('You must specify a size if not creating a volume from a snapshot') if options[:snapshot_id].blank? && options[:size].blank?
+
+      action = 'CreateVolume'
+      params = {
+        'Action'           => action,
+        'AvailabilityZone' => availability_zone
+      }
+      params['Size'] = options[:size] unless options[:size].blank?
+      params['SnapshotId'] = options[:snapshot_id] unless options[:snapshot_id].blank?
+
+      response = send_request(params)
+      parser = Awsum::Ec2::VolumeParser.new(self)
+      parser.parse(response.body)[0]
     end
 
 private

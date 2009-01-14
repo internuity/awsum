@@ -150,4 +150,54 @@ class ImagesTest < Test::Unit::TestCase
       end
     end
   end
+
+  context "Volumnes: " do
+    context "Creating a volume" do
+      setup {
+        xml = load_fixture('ec2/create_volume')
+        response = stub('Http Response', :body => xml)
+        @ec2.expects(:send_request).returns(response)
+
+        @result = @ec2.create_volume 'us-east-1b', :size => 10
+      }
+
+      should "return a volume" do
+        assert_equal Awsum::Ec2::Volume, @result.class
+      end
+    end
+
+    context "retrieving a list of volumes" do
+      setup {
+        xml = load_fixture('ec2/volumes')
+        response = stub('Http Response', :body => xml)
+        @ec2.expects(:send_request).returns(response)
+
+        @result = @ec2.volumes
+      }
+
+      should "return an array of volumes" do
+        assert @result.is_a?(Array)
+        assert_equal Awsum::Ec2::Volume, @result[0].class
+      end
+    end
+
+#    context "a volume" do
+#      setup {
+#        xml = load_fixture('ec2/instance')
+#        response = stub('Http Response', :body => xml)
+#        @ec2.expects(:send_request).returns(response)
+#
+#        @instance = @ec2.instance 'i-3f1cc856'
+#      }
+#
+#      should "be able to create a snapshot" do
+#        xml = load_fixture('ec2/create_snapshot')
+#        response = stub('Http Response', :body => xml)
+#        response.expects(:is_a?).returns(true)
+#        @ec2.expects(:send_request).returns(response)
+#
+#        assert @instance.terminate
+#      end
+#    end
+  end
 end

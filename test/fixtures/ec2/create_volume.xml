@@ -1,0 +1,10 @@
+<?xml version="1.0"?>
+<CreateVolumeResponse xmlns="http://ec2.amazonaws.com/doc/2008-12-01/">
+    <requestId>802160fa-0789-4441-9132-78d83702c3be</requestId>
+    <volumeId>vol-44d6322d</volumeId>
+    <size>10</size>
+    <snapshotId/>
+    <availabilityZone>us-east-1b</availabilityZone>
+    <status>creating</status>
+    <createTime>2009-01-14T03:57:08.000Z</createTime>
+</CreateVolumeResponse>

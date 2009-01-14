@@ -6,6 +6,7 @@
 # Licence:: MIT License (http://www.opensource.org/licenses/mit-license.php)
 #
 
+require 'support'
 require 'requestable'
 require 'parser'
 require 'ec2/ec2'
@@ -17,3 +18,5 @@ module Awsum
   API_VERSION = '2008-12-01'
   SIGNATURE_VERSION = 2
 end
+
+
