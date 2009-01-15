@@ -107,6 +107,29 @@ module Awsum
       instances([instance_id])[0]
     end
 
+    # Retrieves the currently running Instance
+    # This should only be run on a running EC2 instance
+    def me
+      require 'open-uri'
+      begin
+        instance_id = open('http://169.254.169.254/latest/meta-data/instance-id').read
+        instance instance_id
+      rescue OpenURI::HTTPError => e
+        nil
+      end
+    end
+
+    # Retreives the user-data supplied when starting the currently running Instance
+    # This should only be run on a running EC2 instance
+    def user_data
+      require 'open-uri'
+      begin
+        open('http://169.254.169.254/latest/user-data').read
+      rescue OpenURI::HTTPError => e
+        nil
+      end
+    end
+
     # Terminates the Instance(s)
     #
     # Returns true if the terminations succeeds, false otherwise

@@ -191,6 +191,42 @@ class ImagesTest < Test::Unit::TestCase
         assert_equal Awsum::Ec2::Volume, volume.class
       end
     end
+    
+    context "On a running EC2 instance" do
+      should "be able to obtain an Instance representing the currently running machine" do
+        xml = load_fixture('ec2/instance')
+        response = stub('Http Response', :body => xml)
+        @ec2.expects(:send_request).returns(response)
+
+        io = mock('OpenURI', :read => 'i-3f1cc856')
+        @ec2.expects(:open).returns(io)
+
+        instance = @ec2.me
+        assert_equal Awsum::Ec2::Instance, instance.class
+      end
+
+      should "return nil if an http error is received" do
+        @ec2.expects(:open).raises(OpenURI::HTTPError.new(404, 'problem'))
+
+        instance = @ec2.me
+        assert_nil instance
+      end
+
+      should "be able to retrieve the user data" do
+        io = mock('OpenURI', :read => 'This is the user data')
+        @ec2.expects(:open).returns(io)
+
+        user_data = @ec2.user_data
+        assert_equal 'This is the user data', user_data
+      end
+
+      should "return nil if there is no user data" do
+        @ec2.expects(:open).raises(OpenURI::HTTPError.new(404, 'problem'))
+
+        user_data = @ec2.user_data
+        assert_nil user_data
+      end
+    end
   end
 
   context "Volumes: " do

@@ -14,6 +14,20 @@ allowing you to work with objects in a very natural way.
     end
   end
 
+==Using the library on an EC2 instance
+
+There are two methods specifically for using a library on an EC2 instance
+  Awsum::Ec2#me
+  Awsum::Ec2#user_data
+
+To extend the quick start example, you could do
+
+  #Create a snapshot of every volume of the currently running instance
+  ec2 = Awsum::Ec2.new(<access key>, <secret key>)
+  ec2.me.volumes.each do |volume|
+    volume.create_snapshot
+  end
+
 ==Note:
 
 Awsum is currently under active development and only supports EC2 at the moment.
