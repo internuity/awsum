@@ -1,0 +1,21 @@
+=Awsum
+
+Awsum (Pronounced Awesome) is a library for working with Amazon web services.
+The concept of Awsum is to expose the AWS library is the most ruby way possible
+allowing you to work with objects in a very natural way.
+
+==Quick Start
+
+  #Create a snapshot for every volume of every instance you own
+  ec2 = Awsum::Ec2.new(<access key>, <secret key>)
+  ec2.instances.each do |instance|
+    instance.volumes.each do |volume|
+      volume.create_snapshot
+    end
+  end
+
+==Note:
+
+Awsum is currently under active development and only supports EC2 at the moment.
+
+Once EC2 is complete, I will focus on S3 and then SQS
