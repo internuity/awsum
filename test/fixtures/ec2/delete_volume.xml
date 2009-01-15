@@ -1,0 +1,5 @@
+<?xml version="1.0"?>
+<DeleteVolumeResponse xmlns="http://ec2.amazonaws.com/doc/2008-12-01/">
+    <requestId>c12b4410-20f9-4ae0-bc70-73e252b687cf</requestId>
+    <return>true</return>
+</DeleteVolumeResponse>

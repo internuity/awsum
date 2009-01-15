@@ -27,6 +27,15 @@ module Awsum
       def terminate
         @ec2.terminate_instances(id)
       end
+
+      def volumes
+        volumes = @ec2.volumes
+        volumes.delete_if {|v| v.instance_id != id}
+      end
+
+      def attach(volume, device = '/dev/sdh')
+        @ec2.attach_volume volume.id, id, device
+      end
     end
 
     class InstanceParser < Awsum::Parser

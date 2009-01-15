@@ -40,8 +40,7 @@ module Awsum
 
     # Retrieve a single Image
     def image(image_id)
-      arr = images(:image_ids => [image_id])
-      arr.size > 0 ? arr[0] : nil
+      images(:image_ids => [image_id])[0]
     end
 
     # Launch an ec2 Instance
@@ -104,8 +103,7 @@ module Awsum
 
     #Retrieve the information on a single Instance
     def instance(instance_id)
-      arr = instances([instance_id])
-      arr.size > 0 ? arr[0] : nil
+      instances([instance_id])[0]
     end
 
     # Terminates the Instance(s)
@@ -133,6 +131,11 @@ module Awsum
       response = send_request(params)
       parser = Awsum::Ec2::VolumeParser.new(self)
       parser.parse(response.body)
+    end
+
+    # Retreive information on a Volume
+    def volume(volume_id)
+      volumes(volume_id)[0]
     end
 
     # Create a new volume
@@ -165,6 +168,38 @@ module Awsum
         'VolumeId'   => volume_id,
         'InstanceId' => instance_id,
         'Device'     => device
+      }
+
+      response = send_request(params)
+      response.is_a?(Net::HTTPSuccess)
+    end
+
+    # Detach a volume from an instance
+    #
+    # Options
+    # * <tt>:instance_id</tt> - The ID of the instance from which the volume will detach
+    # * <tt>:device</tt> - The device name
+    # * <tt>:force</tt> - Whether to force the detachment. NOTE: If forced you may have data corruption issues.
+    def detach_volume(volume_id, options = {})
+      action = 'DetachVolume'
+      params = {
+        'Action'     => action,
+        'VolumeId'   => volume_id
+      }
+      params['InstanceId'] = options[:instance_id] unless options[:instance_id].blank?
+      params['Device'] = options[:device] unless options[:device].blank?
+      params['Force'] = options[:force] unless options[:force].blank?
+
+      response = send_request(params)
+      response.is_a?(Net::HTTPSuccess)
+    end
+
+    # Delete a volume
+    def delete_volume(volume_id)
+      action = 'DeleteVolume'
+      params = {
+        'Action'     => action,
+        'VolumeId'   => volume_id
       }
 
       response = send_request(params)

@@ -148,6 +148,29 @@ class ImagesTest < Test::Unit::TestCase
 
         assert @instance.terminate
       end
+
+      should "be able to list it's volumes" do
+        xml = load_fixture('ec2/volumes')
+        response = stub('Http Response', :body => xml)
+        @ec2.expects(:send_request).returns(response)
+
+        assert @instance.volumes.is_a?(Array)
+      end
+
+      should "be able to attach a volumes" do
+        xml = load_fixture('ec2/volumes')
+        response = stub('Http Response', :body => xml)
+        @ec2.expects(:send_request).returns(response)
+
+        volume = @ec2.volumes[0]
+
+        xml = load_fixture('ec2/attach_volume')
+        response = stub('Http Response', :body => xml)
+        response.expects(:is_a?).returns(true)
+        @ec2.expects(:send_request).returns(response)
+
+        assert @instance.attach volume
+      end
     end
   end
 
@@ -196,23 +219,62 @@ class ImagesTest < Test::Unit::TestCase
       end
     end
 
-#    context "a volume" do
-#      setup {
-#        xml = load_fixture('ec2/instance')
-#        response = stub('Http Response', :body => xml)
-#        @ec2.expects(:send_request).returns(response)
-#
-#        @instance = @ec2.instance 'i-3f1cc856'
-#      }
-#
-#      should "be able to create a snapshot" do
-#        xml = load_fixture('ec2/create_snapshot')
-#        response = stub('Http Response', :body => xml)
-#        response.expects(:is_a?).returns(true)
-#        @ec2.expects(:send_request).returns(response)
-#
-#        assert @instance.terminate
-#      end
-#    end
+    context "Detaching a volume" do
+      setup {
+        xml = load_fixture('ec2/detach_volume')
+        response = stub('Http Response', :body => xml)
+        response.expects(:is_a?).returns(true)
+        @ec2.expects(:send_request).returns(response)
+
+        @result = @ec2.detach_volume 'vol-44d6322d'
+      }
+
+      should "return true" do
+        assert @result
+      end
+    end
+
+    context "Deleting a volume" do
+      setup {
+        xml = load_fixture('ec2/delete_volume')
+        response = stub('Http Response', :body => xml)
+        response.expects(:is_a?).returns(true)
+        @ec2.expects(:send_request).returns(response)
+
+        @result = @ec2.delete_volume 'vol-44d6322d'
+      }
+
+      should "return true" do
+        assert @result
+      end
+    end
+
+    context "a volume" do
+      setup {
+        xml = load_fixture('ec2/volumes')
+        response = stub('Http Response', :body => xml)
+        @ec2.expects(:send_request).returns(response)
+
+        @volume = @ec2.volume 'vol-44d6322d'
+      }
+
+      should "be able to detach" do
+        xml = load_fixture('ec2/detach_volume')
+        response = stub('Http Response', :body => xml)
+        response.expects(:is_a?).returns(true)
+        @ec2.expects(:send_request).returns(response)
+
+        assert @volume.detach
+      end
+
+      should "be able to delete" do
+        xml = load_fixture('ec2/delete_volume')
+        response = stub('Http Response', :body => xml)
+        response.expects(:is_a?).returns(true)
+        @ec2.expects(:send_request).returns(response)
+
+        assert @volume.delete
+      end
+    end
   end
 end

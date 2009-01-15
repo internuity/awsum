@@ -16,6 +16,16 @@ module Awsum
         @availability_zone = availability_zone
         @attachment_status = attachment_status
       end
+
+      # Detach this volume
+      def detach(force = false)
+        @ec2.detach_volume id, :force => force
+      end
+
+      # Delete this volume
+      def delete
+        @ec2.delete_volume id
+      end
     end
 
     class VolumeParser < Awsum::Parser

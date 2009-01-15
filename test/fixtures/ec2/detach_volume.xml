@@ -1,0 +1,9 @@
+<?xml version="1.0"?>
+<DetachVolumeResponse xmlns="http://ec2.amazonaws.com/doc/2008-12-01/">
+    <requestId>7bd88374-377d-4954-8084-f0cd1ab8c873</requestId>
+    <volumeId>vol-44d6322d</volumeId>
+    <instanceId>i-3f1cc856</instanceId>
+    <device>/dev/sdb</device>
+    <status>detaching</status>
+    <attachTime>2009-01-15T03:28:05.000Z</attachTime>
+</DetachVolumeResponse>
