@@ -28,12 +28,13 @@ module Awsum
         @ec2.terminate_instances(id)
       end
 
+      # Lists all the Volume(s) attached to this Instance
       def volumes
         volumes = @ec2.volumes
         volumes.delete_if {|v| v.instance_id != id}
       end
 
-      # Will create and attach a volume to this Instance
+      # Will create and attach a Volume to this Instance
       # You must specify a size or a snapshot_id
       def create_volume(size = nil, snapshot_id = nil, device = '/dev/sdh')
         raise ArgumentError.new('You must specify a size if not creating a volume from a snapshot') if size.blank? && snapshot_id.blank?

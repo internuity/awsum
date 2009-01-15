@@ -17,6 +17,12 @@ module Awsum
         @attachment_status = attachment_status
       end
 
+      # Will reload the information about this Volume
+      #
+      # Useful for when a volume has just been created but is not yet available
+      #   while volume.status != 'available'
+      #     volume.reload
+      #   end
       def reload
         reloaded_volume = @ec2.volume id
 
@@ -42,10 +48,12 @@ module Awsum
         @ec2.delete_volume id
       end
 
+      # Creates a Snapshot of this Volume
       def create_snapshot
         @ec2.create_snapshot id
       end
 
+      # Lists the Snapshot(s) of this Volume
       def snapshots
         snapshots = @ec2.snapshots
         snapshots.delete_if {|s| s.volume_id != id}
