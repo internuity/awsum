@@ -56,7 +56,7 @@ spec = Gem::Specification.new do |s|
                                  "Rakefile",
                                  "{lib,test}/**/*"].to_a
   s.require_path      = "lib"
-  s.test_files        = FileList["test/**/test_*.rb"].to_a
+  s.test_files        = FileList["test/**/test_*.rb"].to_a + FileList["test/fixtures/**/*.xml"].to_a
   s.rubyforge_project = "awsum"
   s.has_rdoc          = true
   s.extra_rdoc_files  = FileList["README*"].to_a
