@@ -44,8 +44,8 @@ class InstancesTest < Test::Unit::TestCase
           assert_equal 'm1.small', @instance.type
         end
 
-        should "have the correct placement" do
-          assert_equal 'us-east-1b', @instance.placement
+        should "have the correct availability zone" do
+          assert_equal 'us-east-1b', @instance.availability_zone
         end
 
         should "have the correct launch time" do
@@ -100,8 +100,8 @@ class InstancesTest < Test::Unit::TestCase
           assert_equal 'm1.small', @instance.type
         end
 
-        should "have the correct placement" do
-          assert_equal 'us-east-1b', @instance.placement
+        should "have the correct availability zone" do
+          assert_equal 'us-east-1b', @instance.availability_zone
         end
 
         should "have the correct launch time" do

@@ -1,0 +1,5 @@
+<?xml version="1.0"?>
+<DeleteSnapshotResponse xmlns="http://ec2.amazonaws.com/doc/2008-12-01/">
+    <requestId>0946c702-0474-428f-814b-3d5601ce53e4</requestId>
+    <return>true</return>
+</DeleteSnapshotResponse>

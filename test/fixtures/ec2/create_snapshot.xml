@@ -1,0 +1,9 @@
+<?xml version="1.0"?>
+<CreateSnapshotResponse xmlns="http://ec2.amazonaws.com/doc/2008-12-01/">
+    <requestId>0c4677f0-5490-45bc-975a-3f2d4d8d499d</requestId>
+    <snapshotId>snap-747c911d</snapshotId>
+    <volumeId>vol-79d13510</volumeId>
+    <status>pending</status>
+    <startTime>2009-01-15T03:59:26.000Z</startTime>
+    <progress/>
+</CreateSnapshotResponse>

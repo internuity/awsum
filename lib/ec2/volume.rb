@@ -17,6 +17,21 @@ module Awsum
         @attachment_status = attachment_status
       end
 
+      def reload
+        reloaded_volume = @ec2.volume id
+
+        @id = id
+        @instance_id = reloaded_volume.instance_id
+        @size = reloaded_volume.size
+        @status = reloaded_volume.status
+        @create_time = reloaded_volume.create_time
+        @snapshot_id = reloaded_volume.snapshot_id
+        @device = reloaded_volume.device
+        @attach_time = reloaded_volume.attach_time
+        @availability_zone = reloaded_volume.availability_zone
+        @attachment_status = reloaded_volume.attachment_status
+      end
+
       # Detach this volume
       def detach(force = false)
         @ec2.detach_volume id, :force => force
@@ -25,6 +40,15 @@ module Awsum
       # Delete this volume
       def delete
         @ec2.delete_volume id
+      end
+
+      def create_snapshot
+        @ec2.create_snapshot id
+      end
+
+      def snapshots
+        snapshots = @ec2.snapshots
+        snapshots.delete_if {|s| s.volume_id != id}
       end
     end
 

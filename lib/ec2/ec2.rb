@@ -4,6 +4,7 @@ require 'openssl'
 require 'ec2/image'
 require 'ec2/instance'
 require 'ec2/volume'
+require 'ec2/snapshot'
 
 module Awsum
   #--
@@ -200,6 +201,49 @@ module Awsum
       params = {
         'Action'     => action,
         'VolumeId'   => volume_id
+      }
+
+      response = send_request(params)
+      response.is_a?(Net::HTTPSuccess)
+    end
+
+    # Create a Snapshot of a Volume
+    def create_snapshot(volume_id)
+      action = 'CreateSnapshot'
+      params = {
+        'Action'     => action,
+        'VolumeId'   => volume_id
+      }
+
+      response = send_request(params)
+      parser = Awsum::Ec2::SnapshotParser.new(self)
+      parser.parse(response.body)[0]
+    end
+
+    # List Snapshot(s)
+    def snapshots(*snapshot_ids)
+      action = 'DescribeSnapshots'
+      params = {
+        'Action' => action
+      }
+      params.merge!(array_to_params(snapshot_ids, 'SnapshotId'))
+
+      response = send_request(params)
+      parser = Awsum::Ec2::SnapshotParser.new(self)
+      parser.parse(response.body)
+    end
+
+    # Get the information about a Snapshot
+    def snapshot(snapshot_id)
+      snapshots(snapshot_id)[0]
+    end
+
+    # Delete a Snapshot
+    def delete_snapshot(snapshot_id)
+      action = 'DeleteSnapshot'
+      params = {
+        'Action'     => action,
+        'SnapshotId' => snapshot_id
       }
 
       response = send_request(params)

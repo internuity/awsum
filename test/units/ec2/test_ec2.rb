@@ -171,10 +171,29 @@ class ImagesTest < Test::Unit::TestCase
 
         assert @instance.attach volume
       end
+
+      should "be able to create a volume" do
+        requests = sequence('requests')
+
+        xml = load_fixture('ec2/create_volume')
+        response = stub('Http Response', :body => xml)
+        @ec2.expects(:send_request).returns(response).in_sequence(requests)
+
+        xml = load_fixture('ec2/available_volume')
+        response = stub('Http Response', :body => xml)
+        @ec2.expects(:send_request).returns(response).in_sequence(requests)
+
+        xml = load_fixture('ec2/attach_volume')
+        response = stub('Http Response', :body => xml)
+        @ec2.expects(:send_request).returns(response).in_sequence(requests)
+
+        volume = @instance.create_volume(10)
+        assert_equal Awsum::Ec2::Volume, volume.class
+      end
     end
   end
 
-  context "Volumnes: " do
+  context "Volumes: " do
     context "Creating a volume" do
       setup {
         xml = load_fixture('ec2/create_volume')
@@ -274,6 +293,87 @@ class ImagesTest < Test::Unit::TestCase
         @ec2.expects(:send_request).returns(response)
 
         assert @volume.delete
+      end
+
+      should "be able to create a snapshot" do
+        xml = load_fixture('ec2/create_snapshot')
+        response = stub('Http Response', :body => xml)
+        @ec2.expects(:send_request).returns(response)
+
+        assert @volume.create_snapshot
+      end
+
+      should "be able to list it's snapshots" do
+        xml = load_fixture('ec2/snapshots')
+        response = stub('Http Response', :body => xml)
+        @ec2.expects(:send_request).returns(response)
+
+        assert @volume.snapshots.is_a?(Array)
+      end
+    end
+  end
+
+  context "Snapshots: " do
+    context "Creating a snapshot" do
+      setup {
+        xml = load_fixture('ec2/create_snapshot')
+        response = stub('Http Response', :body => xml)
+        @ec2.expects(:send_request).returns(response)
+
+        @result = @ec2.create_snapshot 'vol-79d13510'
+      }
+
+      should "return a snapshot" do
+        assert_equal Awsum::Ec2::Snapshot, @result.class
+      end
+    end
+
+    context "retrieving a list of snapshots" do
+      setup {
+        xml = load_fixture('ec2/snapshots')
+        response = stub('Http Response', :body => xml)
+        @ec2.expects(:send_request).returns(response)
+
+        @result = @ec2.snapshots
+      }
+
+      should "return an array of snapshots" do
+        assert @result.is_a?(Array)
+        assert_equal Awsum::Ec2::Snapshot, @result[0].class
+      end
+    end
+
+    context "Deleting a snapshot" do
+      setup {
+        xml = load_fixture('ec2/delete_snapshot')
+        response = stub('Http Response', :body => xml)
+        response.expects(:is_a?).returns(true)
+        @ec2.expects(:send_request).returns(response)
+
+        @result = @ec2.delete_snapshot 'snap-747c911d'
+      }
+
+      should "return true" do
+        assert @result
+      end
+    end
+
+    context "a snapshot" do
+      setup {
+        xml = load_fixture('ec2/snapshots')
+        response = stub('Http Response', :body => xml)
+        @ec2.expects(:send_request).returns(response)
+
+        @snapshot = @ec2.snapshot 'snap-747c911d'
+      }
+
+      should "be able to delete" do
+        xml = load_fixture('ec2/delete_snapshot')
+        response = stub('Http Response', :body => xml)
+        response.expects(:is_a?).returns(true)
+        @ec2.expects(:send_request).returns(response)
+
+        assert @snapshot.delete
       end
     end
   end
