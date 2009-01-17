@@ -413,4 +413,75 @@ class ImagesTest < Test::Unit::TestCase
       end
     end
   end
+
+  context "Availability Zones: " do
+    context "retrieving a list of availability zones" do
+      setup {
+        xml = load_fixture('ec2/availability_zones')
+        response = stub('Http Response', :body => xml)
+        @ec2.expects(:send_request).returns(response)
+
+        @result = @ec2.availability_zones
+      }
+
+      should "return an array of availability zones" do
+        assert @result.is_a?(Array)
+        assert_equal Awsum::Ec2::AvailabilityZone, @result[0].class
+      end
+    end
+  end
+
+  context "Regions: " do
+    context "retrieving a list of regions" do
+      setup {
+        xml = load_fixture('ec2/regions')
+        response = stub('Http Response', :body => xml)
+        @ec2.expects(:send_request).returns(response)
+
+        @result = @ec2.regions
+      }
+
+      should "return an array of regions" do
+        assert @result.is_a?(Array)
+        assert_equal Awsum::Ec2::Region, @result[0].class
+      end
+    end
+
+    context "a region" do
+      setup {
+        xml = load_fixture('ec2/regions')
+        response = stub('Http Response', :body => xml)
+        @ec2.expects(:send_request).returns(response)
+
+        @region = @ec2.region 'us-east-1'
+      }
+
+      should "be able to list availability zones" do
+        xml = load_fixture('ec2/availability_zones')
+        response = stub('Http Response', :body => xml)
+        @ec2.expects(:send_request).returns(response)
+
+        assert @region.availability_zones.is_a?(Array)
+      end
+
+      should "work in block mode" do
+        xml = load_fixture('ec2/availability_zones')
+        response = stub('Http Response', :body => xml)
+        @ec2.expects(:send_request).returns(response)
+
+        azones = nil
+        @region.use do
+          azones = availability_zones
+        end
+        assert azones.is_a?(Array)
+        assert_equal Awsum::Ec2::AvailabilityZone, azones[0].class
+      end
+
+      should "pass non-region methods on to it's internal ec2 object (method missing)" do
+        @ec2.expects(:run_instances).returns(true)
+
+        assert @region.run_instances('i-123456789')
+      end
+    end
+  end
 end

@@ -14,6 +14,13 @@ allowing you to work with objects in a very natural way.
     end
   end
 
+==Working with different Regions
+You can use blocks to wrap your calls for a specific Region
+  ec2.region('eu-west-1').use do
+    #Run an instance in the eu-west-1 region
+    run_instance(...)
+  end
+
 ==Using the library on an EC2 instance
 
 There are two methods specifically for using a library on an EC2 instance

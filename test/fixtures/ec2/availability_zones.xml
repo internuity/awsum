@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+<DescribeAvailabilityZonesResponse xmlns="http://ec2.amazonaws.com/doc/2008-12-01/">
+    <requestId>6ffe1588-28b8-4033-a07c-97b029c6930a</requestId>
+    <availabilityZoneInfo>
+        <item>
+            <zoneName>eu-west-1a</zoneName>
+            <zoneState>available</zoneState>
+            <regionName>eu-west-1</regionName>
+        </item>
+        <item>
+            <zoneName>eu-west-1b</zoneName>
+            <zoneState>available</zoneState>
+            <regionName>eu-west-1</regionName>
+        </item>
+    </availabilityZoneInfo>
+</DescribeAvailabilityZonesResponse>

@@ -1,10 +1,12 @@
 require 'cgi'
 require 'base64'
 require 'openssl'
+require 'ec2/availability_zone'
 require 'ec2/image'
 require 'ec2/instance'
-require 'ec2/volume'
 require 'ec2/snapshot'
+require 'ec2/region'
+require 'ec2/volume'
 
 module Awsum
   #--
@@ -273,10 +275,45 @@ module Awsum
       response.is_a?(Net::HTTPSuccess)
     end
 
-private
+    # List all availability zones
+    def availability_zones(*zone_names)
+      action = 'DescribeAvailabilityZones'
+      params = {
+        'Action'     => action
+      }
+      params.merge!(array_to_params(zone_names, 'ZoneName'))
+
+      response = send_request(params)
+      parser = Awsum::Ec2::AvailabilityZoneParser.new(self)
+      parser.parse(response.body)
+    end
+
+    # List all regions
+    def regions(*region_names)
+      action = 'DescribeRegions'
+      params = {
+        'Action'     => action
+      }
+      params.merge!(array_to_params(region_names, 'Region'))
+
+      response = send_request(params)
+      parser = Awsum::Ec2::RegionParser.new(self)
+      parser.parse(response.body)
+    end
+
+    # List a Region
+    def region(region_name)
+      regions(region_name)[0]
+    end
+
+#private
     #The host to make all requests against
     def host
-      'ec2.amazonaws.com'
+      @host ||= 'ec2.amazonaws.com'
+    end
+
+    def host=(host)
+      @host = host
     end
   end
 end
