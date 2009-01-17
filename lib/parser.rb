@@ -1,7 +1,7 @@
 require 'rexml/document'
 
 module Awsum
-  class Parser
+  class Parser #:nodoc:
     def parse(xml_text)
       REXML::Document.parse_stream(xml_text, self)
       result

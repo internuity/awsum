@@ -3,7 +3,7 @@ module Awsum
     class Volume
       attr_reader :id, :instance_id, :size, :status, :create_time, :snapshot_id, :device, :attach_time, :availability_zone, :attachment_status
 
-      def initialize(ec2, id, instance_id, size, status, create_time, snapshot_id, device, attach_time, availability_zone, attachment_status)
+      def initialize(ec2, id, instance_id, size, status, create_time, snapshot_id, device, attach_time, availability_zone, attachment_status) #:nodoc:
         @ec2 = ec2
         @id = id
         @instance_id = instance_id
@@ -60,7 +60,7 @@ module Awsum
       end
     end
 
-    class VolumeParser < Awsum::Parser
+    class VolumeParser < Awsum::Parser #:nodoc:
       def initialize(ec2)
         @ec2 = ec2
         @volumes = []

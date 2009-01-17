@@ -169,7 +169,7 @@ class ImagesTest < Test::Unit::TestCase
         response.expects(:is_a?).returns(true)
         @ec2.expects(:send_request).returns(response)
 
-        assert @instance.attach volume
+        assert @instance.attach(volume)
       end
 
       should "be able to create a volume" do

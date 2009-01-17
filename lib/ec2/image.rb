@@ -3,7 +3,7 @@ module Awsum
     class Image
       attr_reader :id, :location, :state, :owner, :public, :architecture, :type, :kernel_id, :ramdisk_id, :platform, :product_codes
 
-      def initialize(ec2, id, location, state, owner, public, architecture, type, kernel_id, ram_disk_id, platform, product_codes)
+      def initialize(ec2, id, location, state, owner, public, architecture, type, kernel_id, ram_disk_id, platform, product_codes) #:nodoc:
         @ec2 = ec2
         @id = id 
         @location = location 
@@ -41,7 +41,7 @@ module Awsum
       alias_method :launch, :run
     end
 
-    class ImageParser < Awsum::Parser
+    class ImageParser < Awsum::Parser #:nodoc:
       def initialize(ec2)
         @ec2 = ec2
         @images = []

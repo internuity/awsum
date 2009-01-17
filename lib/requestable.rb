@@ -2,7 +2,7 @@ require 'net/https'
 require 'uri'
 
 module Awsum
-  module Requestable
+  module Requestable #:nodoc:
 
 private
     def send_request(params)

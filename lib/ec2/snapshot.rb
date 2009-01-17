@@ -3,7 +3,7 @@ module Awsum
     class Snapshot
       attr_reader :id, :volume_id, :status, :start_time, :progress
 
-      def initialize(ec2, id, volume_id, status, start_time, progress)
+      def initialize(ec2, id, volume_id, status, start_time, progress) #:nodoc:
         @ec2 = ec2
         @id = id
         @volume_id = volume_id
@@ -18,7 +18,7 @@ module Awsum
       end
     end
 
-    class SnapshotParser < Awsum::Parser
+    class SnapshotParser < Awsum::Parser #:nodoc:
       def initialize(ec2)
         @ec2 = ec2
         @snapshots = []

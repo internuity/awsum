@@ -5,7 +5,7 @@ module Awsum
     class Instance
       attr_reader :id, :image_id, :type, :state, :dns_name, :private_dns_name, :key_name, :kernel_id, :launch_time, :availability_zone, :product_codes, :ramdisk_id, :reason, :launch_index
 
-      def initialize(ec2, id, image_id, type, state, dns_name, private_dns_name, key_name, kernel_id, launch_time, availability_zone, product_codes, ramdisk_id, reason, launch_index)
+      def initialize(ec2, id, image_id, type, state, dns_name, private_dns_name, key_name, kernel_id, launch_time, availability_zone, product_codes, ramdisk_id, reason, launch_index) #:nodoc:
         @ec2 = ec2
         @id = id
         @image_id = image_id
@@ -53,7 +53,7 @@ module Awsum
       end
     end
 
-    class InstanceParser < Awsum::Parser
+    class InstanceParser < Awsum::Parser #:nodoc:
       def initialize(ec2)
         @ec2 = ec2
         @instances = []

@@ -32,4 +32,4 @@ To extend the quick start example, you could do
 
 Awsum is currently under active development and only supports EC2 at the moment.
 
-Once EC2 is complete, I will focus on S3 and then SQS
+Once EC2 is complete, I will focus on S3, SQS, CloudSpace and then others
