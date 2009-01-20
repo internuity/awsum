@@ -86,4 +86,29 @@ class ImagesTest < Test::Unit::TestCase
       end
     end
   end
+
+  context "RegisterImageParser:" do
+    context "Parsing the result of a call to RegisterImage" do
+      setup {
+        ec2 = Awsum::Ec2.new('abc', 'xyz')
+        xml = load_fixture('ec2/register_image')
+        parser = Awsum::Ec2::RegisterImageParser.new(ec2)
+        @result = parser.parse(xml)
+      }
+
+      should "return an image id" do
+        assert @result.is_a?(String)
+      end
+
+      context ", the image id" do
+        setup {
+          @image = @result
+        }
+
+        should "have the correct id" do
+          assert_equal "ami-4782652e", @image
+        end
+      end
+    end
+  end
 end

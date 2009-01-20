@@ -30,7 +30,7 @@ module Awsum
       options = {:image_ids => [], :owners => [], :executable_by => []}.merge(options)
       action = 'DescribeImages'
       params = {
-          'Action' => action,
+          'Action' => action
         }
       #Add options
       params.merge!(array_to_params(options[:image_ids], "ImageId"))
@@ -50,6 +50,31 @@ module Awsum
     # Retrieve a single Image
     def image(image_id)
       images(:image_ids => [image_id])[0]
+    end
+
+    # Register an Image
+    def register_image(image_location)
+      action = 'RegisterImage'
+      params = {
+          'Action'        => action,
+          'ImageLocation' => image_location
+        }
+
+      response = send_request(params)
+      parser = Awsum::Ec2::RegisterImageParser.new(self)
+      parser.parse(response.body)
+    end
+
+    # Deregister an Image. Once deregistered, you can no longer launch the Image
+    def deregister_image(image_id)
+      action = 'DeregisterImage'
+      params = {
+          'Action'  => action,
+          'ImageId' => image_id
+        }
+
+      response = send_request(params)
+      response.is_a?(Net::HTTPSuccess)
     end
 
     # Launch an ec2 Instance

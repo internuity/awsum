@@ -1,0 +1,5 @@
+<?xml version="1.0"?>
+<RegisterImageResponse xmlns="http://ec2.amazonaws.com/doc/2008-12-01/">
+    <requestId>e228afde-a95b-4004-881f-68ed4e1907d0</requestId>
+    <imageId>ami-4782652e</imageId>
+</RegisterImageResponse>

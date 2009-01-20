@@ -21,13 +21,28 @@ class ImagesTest < Test::Unit::TestCase
       end
     end
 
+    context "retrieving a list of owner images" do
+      setup {
+        xml = load_fixture('ec2/images')
+        response = stub('Http Response', :body => xml)
+        @ec2.expects(:send_request).returns(response)
+
+        @result = @ec2.my_images
+      }
+
+      should "return an array of images" do
+        assert @result.is_a?(Array)
+        assert_equal Awsum::Ec2::Image, @result[0].class
+      end
+    end
+
     context "retrieving a single image by id" do
       setup {
         xml = load_fixture('ec2/image')
         response = stub('Http Response', :body => xml)
         @ec2.expects(:send_request).returns(response)
 
-        @result = @ec2.image 'ari-f9c22690'
+        @result = @ec2.image('ari-f9c22690')
       }
 
       should "return a single image" do
@@ -51,6 +66,66 @@ class ImagesTest < Test::Unit::TestCase
 
         instances = @image.run
         assert_equal Awsum::Ec2::Instance, instances[0].class
+      end
+    end
+
+    context "register an image" do
+      setup {
+        xml = load_fixture('ec2/register_image')
+        response = stub('Http Response', :body => xml)
+        @ec2.expects(:send_request).returns(response)
+
+        @image_id = @ec2.register_image('s3.bucket.location')
+      }
+
+      should "return an image id" do
+        assert_equal 'ami-4782652e', @image_id
+      end
+    end
+
+    context "deregistering an image" do
+      setup {
+        xml = load_fixture('ec2/deregister_image')
+        response = stub('Http Response', :body => xml)
+        @ec2.expects(:send_request).returns(response)
+        response.expects(:is_a?).returns(true)
+      }
+
+      should "return true" do
+        assert @ec2.deregister_image('ami-4782652e')
+      end
+    end
+
+    context "an image" do
+      setup {
+        xml = load_fixture('ec2/image')
+        response = stub('Http Response', :body => xml)
+        @ec2.expects(:send_request).returns(response)
+
+        @image = @ec2.image('ami-ABCDEF')
+      }
+
+      should "be able to deregister itself" do
+        xml = load_fixture('ec2/deregister_image')
+        response = stub('Http Response', :body => xml)
+        @ec2.expects(:send_request).returns(response)
+        response.expects(:is_a?).returns(true)
+
+        assert @image.deregister
+      end
+
+      should "be able to reregister itself" do
+        requests = sequence('requests')
+        xml = load_fixture('ec2/deregister_image')
+        response = stub('Http Response', :body => xml)
+        @ec2.expects(:send_request).returns(response).in_sequence(requests)
+        response.expects(:is_a?).returns(true).in_sequence(requests)
+
+        xml = load_fixture('ec2/register_image')
+        response = stub('Http Response', :body => xml)
+        @ec2.expects(:send_request).returns(response).in_sequence(requests)
+
+        assert @image.reregister
       end
     end
   end

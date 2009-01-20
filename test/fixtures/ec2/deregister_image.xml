@@ -1,0 +1,5 @@
+<?xml version="1.0"?>
+<DeregisterImageResponse xmlns="http://ec2.amazonaws.com/doc/2008-12-01/">
+    <requestId>00f39eca-1435-4773-ac7e-5154a0e7c564</requestId>
+    <return>true</return>
+</DeregisterImageResponse>

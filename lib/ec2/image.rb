@@ -22,6 +22,21 @@ module Awsum
         @public
       end
 
+      # Deregister this Image
+      def deregister
+        @ec2.deregister_image @id
+      end
+
+      # Reregister this image
+      #
+      # Will both deregister and then register the Image again
+      def reregister
+        @ec2.deregister_image @id
+        new_id = @ec2.register_image @location
+        @id = new_id
+        self
+      end
+
       # launches instances of this image
       #
       # Options:
@@ -109,6 +124,37 @@ module Awsum
 
       def result
         @images
+      end
+    end
+
+    class RegisterImageParser < Awsum::Parser #:nodoc:
+      def initialize(ec2)
+        @ec2 = ec2
+        @image = nil
+        @text = nil
+      end
+
+      def tag_start(tag, attributes)
+        case tag
+          when 'imageId'
+            @text = ''
+        end
+      end
+
+      def text(text)
+        @text << text unless @text.nil?
+      end
+
+      def tag_end(tag)
+        case tag
+          when 'imageId'
+            @image = @text
+            @text = nil
+        end
+      end
+
+      def result
+        @image
       end
     end
   end
