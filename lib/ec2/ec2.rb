@@ -42,6 +42,11 @@ module Awsum
       parser.parse(response.body)
     end
 
+    # Retrieve all Image(s) owned by you
+    def my_images
+      images :owners => 'self'
+    end
+
     # Retrieve a single Image
     def image(image_id)
       images(:image_ids => [image_id])[0]
