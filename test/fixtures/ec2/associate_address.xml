@@ -1,0 +1,5 @@
+<?xml version="1.0"?>
+<AssociateAddressResponse xmlns="http://ec2.amazonaws.com/doc/2008-12-01/">
+  <requestId>668dec61-986c-468e-85be-4bfcd708fb1f</requestId>
+  <return>true</return>
+</AssociateAddressResponse></return></requestId></AssociateAddressResponse>

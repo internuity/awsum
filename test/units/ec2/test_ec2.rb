@@ -484,4 +484,195 @@ class ImagesTest < Test::Unit::TestCase
       end
     end
   end
+
+  context "Addresses: " do
+    context "retrieving a list of addresses" do
+      setup {
+        xml = load_fixture('ec2/addresses')
+        response = stub('Http Response', :body => xml)
+        @ec2.expects(:send_request).returns(response)
+
+        @result = @ec2.addresses
+      }
+
+      should "return an array of addresses" do
+        assert @result.is_a?(Array)
+        assert_equal Awsum::Ec2::Address, @result[0].class
+      end
+    end
+
+    context "allocating an address" do
+      setup {
+        xml = load_fixture('ec2/allocate_address')
+        response = stub('Http Response', :body => xml)
+        @ec2.expects(:send_request).returns(response)
+        
+        @result = @ec2.allocate_address
+      }
+
+      should "return an Address" do
+        assert_equal Awsum::Ec2::Address, @result.class
+      end
+    end
+
+    context "associate an address" do
+      setup {
+        xml = load_fixture('ec2/associate_address')
+        response = stub('Http Response', :body => xml)
+        response.expects(:is_a?).returns(true)
+        @ec2.expects(:send_request).returns(response)
+      }
+
+      should "succeed" do
+        assert @ec2.associate_address('127.0.0.1', 'i-ABCDEF')
+      end
+    end
+
+    context "disassociate an address" do
+      setup {
+        xml = load_fixture('ec2/disassociate_address')
+        response = stub('Http Response', :body => xml)
+        response.expects(:is_a?).returns(true)
+        @ec2.expects(:send_request).returns(response)
+      }
+
+      should "succeed" do
+        assert @ec2.disassociate_address('127.0.0.1')
+      end
+    end
+
+    context "release an address" do
+      setup {
+        requests = sequence('requests')
+        
+        xml = load_fixture('ec2/unassociated_address')
+        response = stub('Http Response', :body => xml)
+        @ec2.expects(:send_request).returns(response).in_sequence(requests)
+
+        xml = load_fixture('ec2/release_address')
+        response = stub('Http Response', :body => xml)
+        response.expects(:is_a?).returns(true)
+        @ec2.expects(:send_request).returns(response).in_sequence(requests)
+      }
+
+      should "succeed" do
+        assert @ec2.release_address('127.0.0.1')
+      end
+    end
+
+    context "release an associated address" do
+      setup {
+        xml = load_fixture('ec2/addresses')
+        response = stub('Http Response', :body => xml)
+        @ec2.expects(:send_request).returns(response)
+      }
+
+      should "raise an error" do
+        assert_raise RuntimeError do
+          @ec2.release_address('127.0.0.1')
+        end
+      end
+    end
+
+    context "force the release of an address" do
+      setup {
+        xml = load_fixture('ec2/release_address')
+        response = stub('Http Response', :body => xml)
+        response.expects(:is_a?).returns(true)
+        @ec2.expects(:send_request).returns(response)
+      }
+
+      should "succeed" do
+        assert @ec2.release_address!('127.0.0.1')
+      end
+    end
+
+    context "an address" do
+      setup {
+        xml = load_fixture('ec2/unassociated_address')
+        @response = stub('Http Response', :body => xml)
+        @ec2.expects(:send_request).returns(@response)
+
+        @address = @ec2.address('127.0.0.1')
+      }
+
+      should "be able to associate with an instance" do
+        xml = load_fixture('ec2/associate_address')
+        response = stub('Http Response', :body => xml)
+        @ec2.expects(:send_request).returns(response)
+        response.expects(:is_a?).returns(true)
+
+        assert @address.associate('i-123456')
+      end
+
+      should "not be able to disassociate with an instance" do
+        assert_raise RuntimeError do
+          @address.disassociate
+        end
+      end
+
+      should "be able to release" do
+        requests = sequence('requests')
+
+        xml = load_fixture('ec2/unassociated_address')
+        response = stub('Http Response', :body => xml)
+        @ec2.expects(:send_request).returns(response).in_sequence(requests)
+
+        xml = load_fixture('ec2/release_address')
+        response = stub('Http Response', :body => xml)
+        @ec2.expects(:send_request).returns(response).in_sequence(requests)
+        response.expects(:is_a?).returns(true).in_sequence(requests)
+
+        assert @address.release
+      end
+    end
+
+    context "an associated address" do
+      setup {
+        xml = load_fixture('ec2/addresses')
+        response = stub('Http Response', :body => xml)
+        @ec2.expects(:send_request).returns(response)
+
+        @address = @ec2.address('127.0.0.1')
+      }
+
+      should "return the instance it's associated with" do
+        xml = load_fixture('ec2/instances')
+        response = stub('Http Response', :body => xml)
+        @ec2.expects(:send_request).returns(response)
+
+        assert_equal Awsum::Ec2::Instance, @address.instance.class
+      end
+
+      should "not be able to associate with an instance" do
+        assert_raise RuntimeError do
+          @address.associate('i-ABCDEF')
+        end
+      end
+
+      should "be able to disassociate from an instance" do
+        xml = load_fixture('ec2/disassociate_address')
+        response = stub('Http Response', :body => xml)
+        @ec2.expects(:send_request).returns(response)
+        response.expects(:is_a?).returns(true)
+
+        assert @address.disassociate
+      end
+
+      should "raise an error when released" do
+        assert_raise RuntimeError do
+          @address.release
+        end
+      end
+
+      should "be able to release when forced" do
+        xml = load_fixture('ec2/release_address')
+        response = stub('Http Response', :body => xml)
+        @ec2.expects(:send_request).returns(response)
+        response.expects(:is_a?).returns(true)
+
+        assert @address.release!
+      end
+    end
+  end
 end

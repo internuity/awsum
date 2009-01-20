@@ -1,0 +1,5 @@
+<?xml version="1.0"?>
+<AllocateAddressResponse xmlns="http://ec2.amazonaws.com/doc/2008-12-01/">
+    <requestId>c4e3b090-0fd8-4e65-aed7-4c3fe8fc7702</requestId>
+    <publicIp>127.0.0.1</publicIp>
+</AllocateAddressResponse>

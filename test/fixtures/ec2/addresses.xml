@@ -1,0 +1,10 @@
+<?xml version="1.0"?>
+<DescribeAddressesResponse xmlns="http://ec2.amazonaws.com/doc/2008-12-01/">
+    <requestId>0a578151-76d1-4461-b1ce-ae36d39ec349</requestId>
+    <addressesSet>
+        <item>
+            <publicIp>127.0.0.1</publicIp>
+            <instanceId>i-3f1cc856</instanceId>
+        </item>
+    </addressesSet>
+</DescribeAddressesResponse>

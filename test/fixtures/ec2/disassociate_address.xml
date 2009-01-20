@@ -1,0 +1,5 @@
+<?xml version="1.0"?>
+<DisassociateAddressResponse xmlns="http://ec2.amazonaws.com/doc/2008-12-01/">
+    <requestId>932e1890-f95f-4b45-b7f1-315bcd0bea30</requestId>
+    <return>true</return>
+</DisassociateAddressResponse>

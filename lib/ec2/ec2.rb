@@ -1,6 +1,7 @@
 require 'cgi'
 require 'base64'
 require 'openssl'
+require 'ec2/address'
 require 'ec2/availability_zone'
 require 'ec2/image'
 require 'ec2/instance'
@@ -29,7 +30,7 @@ module Awsum
       options = {:image_ids => [], :owners => [], :executable_by => []}.merge(options)
       action = 'DescribeImages'
       params = {
-          'Action'           => action,
+          'Action' => action,
         }
       #Add options
       params.merge!(array_to_params(options[:image_ids], "ImageId"))
@@ -167,7 +168,7 @@ module Awsum
     # Create a new volume
     #
     # Options:
-    # * <tt>:size</tt> - The size of the volume to be created (in GB) (NOTE: Required if you are not creating from a snapshot)
+    # * <tt>:size</tt> - The size of the volume to be created (in GB) (<b>NOTE:</b> Required if you are not creating from a snapshot)
     # * <tt>:snapshot_id</tt> - The snapshot id from which to create the volume
     #
     def create_volume(availability_zone, options = {})
@@ -205,7 +206,7 @@ module Awsum
     # Options
     # * <tt>:instance_id</tt> - The ID of the instance from which the volume will detach
     # * <tt>:device</tt> - The device name
-    # * <tt>:force</tt> - Whether to force the detachment. NOTE: If forced you may have data corruption issues.
+    # * <tt>:force</tt> - Whether to force the detachment. <b>NOTE:</b> If forced you may have data corruption issues.
     def detach_volume(volume_id, options = {})
       action = 'DetachVolume'
       params = {
@@ -236,8 +237,8 @@ module Awsum
     def create_snapshot(volume_id)
       action = 'CreateSnapshot'
       params = {
-        'Action'     => action,
-        'VolumeId'   => volume_id
+        'Action'   => action,
+        'VolumeId' => volume_id
       }
 
       response = send_request(params)
@@ -275,11 +276,11 @@ module Awsum
       response.is_a?(Net::HTTPSuccess)
     end
 
-    # List all availability zones
+    # List all AvailabilityZone(s)
     def availability_zones(*zone_names)
       action = 'DescribeAvailabilityZones'
       params = {
-        'Action'     => action
+        'Action' => action
       }
       params.merge!(array_to_params(zone_names, 'ZoneName'))
 
@@ -288,11 +289,11 @@ module Awsum
       parser.parse(response.body)
     end
 
-    # List all regions
+    # List all Region(s)
     def regions(*region_names)
       action = 'DescribeRegions'
       params = {
-        'Action'     => action
+        'Action' => action
       }
       params.merge!(array_to_params(region_names, 'Region'))
 
@@ -304,6 +305,107 @@ module Awsum
     # List a Region
     def region(region_name)
       regions(region_name)[0]
+    end
+
+    # List Addresses
+    def addresses(*public_ips)
+      action = 'DescribeAddresses'
+      params = {
+        'Action' => action
+      }
+      params.merge!(array_to_params(public_ips, 'PublicIp'))
+
+      response = send_request(params)
+      parser = Awsum::Ec2::AddressParser.new(self)
+      parser.parse(response.body)
+    end
+
+    # Get the Address with a specific public ip
+    def address(public_ip)
+      addresses(public_ip)[0]
+    end
+
+    # Allocate Address
+    #
+    # Will aquire an elastic ip address for use with your account
+    def allocate_address
+      action = 'AllocateAddress'
+      params = {
+        'Action' => action
+      }
+
+      response = send_request(params)
+      parser = Awsum::Ec2::AddressParser.new(self)
+      parser.parse(response.body)[0]
+    end
+
+    # Associate Address
+    #
+    # Will link an allocated elastic ip address to an Instance
+    #
+    # <b>NOTE:</b> If the ip address is already associated with another instance, it will be associated with the new instance.
+    #
+    # You can run this command more than once and it will not return an error.
+    def associate_address(instance_id, public_ip)
+      action = 'AssociateAddress'
+      params = {
+        'Action'     => action,
+        'InstanceId' => instance_id,
+        'PublicIp'   => public_ip
+      }
+
+      response = send_request(params)
+      response.is_a?(Net::HTTPSuccess)
+    end
+
+    # Disassociate Address
+    #
+    # Will disassociate an allocated elastic ip address from the Instance it's allocated to
+    #
+    # <b>NOTE:</b> You can run this command more than once and it will not return an error.
+    def disassociate_address(public_ip)
+      action = 'DisassociateAddress'
+      params = {
+        'Action'     => action,
+        'PublicIp'   => public_ip
+      }
+
+      response = send_request(params)
+      response.is_a?(Net::HTTPSuccess)
+    end
+
+    # Releasees an associated Address
+    #
+    # <b>NOTE:</b> This is not a direct call to the Amazon web service. This is a safe operation that will first check to see if the address is allocated to an instance and fail if it is
+    def release_address(public_ip)
+      address = address(public_ip)
+
+      if address.instance_id.nil?
+        action = 'ReleaseAddress'
+        params = {
+          'Action'   => action,
+          'PublicIp' => public_ip
+        }
+
+        response = send_request(params)
+        response.is_a?(Net::HTTPSuccess)
+      else
+        raise 'Address is currently allocated' #FIXME: Add a proper Awsum error here
+      end
+    end
+
+    # Releasees an associated Address
+    #
+    # <b>NOTE:</b> This will disassociate an address automatically if it is associated with an instance
+    def release_address!(public_ip)
+      action = 'ReleaseAddress'
+      params = {
+        'Action'   => action,
+        'PublicIp' => public_ip
+      }
+
+      response = send_request(params)
+      response.is_a?(Net::HTTPSuccess)
     end
 
 #private
