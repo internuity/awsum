@@ -53,6 +53,16 @@ class InstancesTest < Test::Unit::TestCase
         end
 
         should "have the correct state" do
+          assert_equal({:code => 0, :name => 'pending'}, @instance.state)
+        end
+      end
+
+      context ", the second instance" do
+        setup {
+          @instance = @result[1]
+        }
+
+        should "have the correct state" do
           assert_equal({:code => 16, :name => 'running'}, @instance.state)
         end
       end

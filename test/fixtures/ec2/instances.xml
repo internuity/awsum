@@ -15,8 +15,8 @@
                     <instanceId>i-3f1cc856</instanceId>
                     <imageId>ami-dfa743b6</imageId>
                     <instanceState>
-                        <code>16</code>
-                        <name>running</name>
+                        <code>0</code>
+                        <name>pending</name>
                     </instanceState>
                     <privateDnsName>ip-10-255-255-255.ec2.internal</privateDnsName>
                     <dnsName>ec2-75-255-255-255.compute-1.amazonaws.com</dnsName>

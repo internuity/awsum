@@ -60,7 +60,7 @@ module Awsum
         @text = nil
         @stack = []
         @placement = nil
-        @state = {}
+        @state = nil
       end
 
       def tag_start(tag, attributes)
@@ -80,6 +80,7 @@ module Awsum
               when 'reservationSet'
               when 'instancesSet'
                 @current = {}
+                @state = {}
               when 'productCodes'
                 @product_codes = []
             end
