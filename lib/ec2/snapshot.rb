@@ -50,7 +50,7 @@ module Awsum
 
       def tag_end(tag)
         case tag
-          when 'DescribeSnapshotsResponts', 'requestId'
+          when 'DescribeSnapshotsResponts'
             #no-op
           when 'snapshotSet'
             @stack.pop

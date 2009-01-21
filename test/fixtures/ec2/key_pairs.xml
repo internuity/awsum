@@ -1,0 +1,10 @@
+<?xml version="1.0"?>
+<DescribeKeyPairsResponse xmlns="http://ec2.amazonaws.com/doc/2008-12-01/">
+    <requestId>a647508d-775c-44e0-870b-3389ef6b5b10</requestId>
+    <keySet>
+        <item>
+            <keyName>gsg-keypair</keyName>
+            <keyFingerprint>ab:ab:ab:ab:ab:ab:ab:ab:ab:ab:ab:ab:ab:ab:ab:ab:ab:ab:ab:ab</keyFingerprint>
+        </item>
+    </keySet>
+</DescribeKeyPairsResponse>

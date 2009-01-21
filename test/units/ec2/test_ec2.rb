@@ -750,4 +750,141 @@ class ImagesTest < Test::Unit::TestCase
       end
     end
   end
+
+  context "Key Pairs: " do
+    context "retrieving a list of key pairs" do
+      setup {
+        xml = load_fixture('ec2/key_pairs')
+        response = stub('Http Response', :body => xml)
+        @ec2.expects(:send_request).returns(response)
+
+        @result = @ec2.key_pairs
+      }
+
+      should "return an array of key pairs" do
+        assert @result.is_a?(Array)
+        assert_equal Awsum::Ec2::KeyPair, @result[0].class
+      end
+    end
+
+    context "retrieving a single key pair by name" do
+      setup {
+        xml = load_fixture('ec2/key_pairs')
+        response = stub('Http Response', :body => xml)
+        @ec2.expects(:send_request).returns(response)
+
+        @result = @ec2.key_pair('gsg_keypair')
+      }
+
+      should "return a single key pair" do
+        assert_equal Awsum::Ec2::KeyPair, @result.class
+      end
+    end
+
+    context "creating a key pair" do
+      setup {
+        xml = load_fixture('ec2/create_key_pair')
+        response = stub('Http Response', :body => xml)
+        @ec2.expects(:send_request).returns(response)
+
+        @result = @ec2.create_key_pair('test-keypair')
+      }
+
+      should "return a key pair" do
+        assert_equal Awsum::Ec2::KeyPair, @result.class
+      end
+    end
+
+    context "deleting a key pair" do
+      setup {
+        xml = load_fixture('ec2/create_key_pair')
+        response = stub('Http Response', :body => xml)
+        @ec2.expects(:send_request).returns(response)
+        response.expects(:is_a?).returns(true)
+      }
+
+      should "succeed" do
+        assert @ec2.delete_key_pair('test-keypair')
+      end
+    end
+
+#    context "an image" do
+#      setup {
+#        xml = load_fixture('ec2/image')
+#        response = stub('Http Response', :body => xml)
+#        @ec2.expects(:send_request).returns(response)
+#
+#        @image = @ec2.image 'ari-f9c22690'
+#      }
+#
+#      should "be able to create an instance" do
+#        xml = load_fixture('ec2/instance')
+#        response = stub('Http Response', :body => xml)
+#        @ec2.expects(:send_request).returns(response)
+#
+#        instances = @image.run
+#        assert_equal Awsum::Ec2::Instance, instances[0].class
+#      end
+#    end
+#
+#    context "register an image" do
+#      setup {
+#        xml = load_fixture('ec2/register_image')
+#        response = stub('Http Response', :body => xml)
+#        @ec2.expects(:send_request).returns(response)
+#
+#        @image_id = @ec2.register_image('s3.bucket.location')
+#      }
+#
+#      should "return an image id" do
+#        assert_equal 'ami-4782652e', @image_id
+#      end
+#    end
+#
+#    context "deregistering an image" do
+#      setup {
+#        xml = load_fixture('ec2/deregister_image')
+#        response = stub('Http Response', :body => xml)
+#        @ec2.expects(:send_request).returns(response)
+#        response.expects(:is_a?).returns(true)
+#      }
+#
+#      should "return true" do
+#        assert @ec2.deregister_image('ami-4782652e')
+#      end
+#    end
+#
+#    context "an image" do
+#      setup {
+#        xml = load_fixture('ec2/image')
+#        response = stub('Http Response', :body => xml)
+#        @ec2.expects(:send_request).returns(response)
+#
+#        @image = @ec2.image('ami-ABCDEF')
+#      }
+#
+#      should "be able to deregister itself" do
+#        xml = load_fixture('ec2/deregister_image')
+#        response = stub('Http Response', :body => xml)
+#        @ec2.expects(:send_request).returns(response)
+#        response.expects(:is_a?).returns(true)
+#
+#        assert @image.deregister
+#      end
+#
+#      should "be able to reregister itself" do
+#        requests = sequence('requests')
+#        xml = load_fixture('ec2/deregister_image')
+#        response = stub('Http Response', :body => xml)
+#        @ec2.expects(:send_request).returns(response).in_sequence(requests)
+#        response.expects(:is_a?).returns(true).in_sequence(requests)
+#
+#        xml = load_fixture('ec2/register_image')
+#        response = stub('Http Response', :body => xml)
+#        @ec2.expects(:send_request).returns(response).in_sequence(requests)
+#
+#        assert @image.reregister
+#      end
+#    end
+  end
 end

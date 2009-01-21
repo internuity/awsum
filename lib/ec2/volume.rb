@@ -95,7 +95,7 @@ module Awsum
 
       def tag_end(tag)
         case tag
-          when 'DescribeVolumesResponse', 'requestId'
+          when 'DescribeVolumesResponse'
             #no-op
           when 'volumeSet', 'attachmentSet'
             @stack.pop

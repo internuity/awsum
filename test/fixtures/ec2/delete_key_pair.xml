@@ -1,0 +1,5 @@
+<?xml version="1.0"?>
+<DeleteKeyPairResponse xmlns="http://ec2.amazonaws.com/doc/2008-12-01/">
+    <requestId>7fb897ed-4cbb-4330-bee5-28f99a42cdec</requestId>
+    <return>true</return>
+</DeleteKeyPairResponse>

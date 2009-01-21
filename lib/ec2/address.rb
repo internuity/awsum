@@ -89,7 +89,7 @@ module Awsum
 
       def tag_end(tag)
         case tag
-          when 'DescribeAddressesResponse', 'requestId'
+          when 'DescribeAddressesResponse'
             #no-op
           when 'addressesSet'
             @stack.pop

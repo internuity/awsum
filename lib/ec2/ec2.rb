@@ -5,6 +5,7 @@ require 'ec2/address'
 require 'ec2/availability_zone'
 require 'ec2/image'
 require 'ec2/instance'
+require 'ec2/keypair'
 require 'ec2/snapshot'
 require 'ec2/region'
 require 'ec2/volume'
@@ -432,6 +433,49 @@ module Awsum
       params = {
         'Action'   => action,
         'PublicIp' => public_ip
+      }
+
+      response = send_request(params)
+      response.is_a?(Net::HTTPSuccess)
+    end
+    
+    # List KeyPair(s)
+    def key_pairs(*key_names)
+      action = 'DescribeKeyPairs'
+      params = {
+        'Action' => action
+      }
+      params.merge!(array_to_params(key_names, 'KeyName'))
+
+      response = send_request(params)
+      parser = Awsum::Ec2::KeyPairParser.new(self)
+      parser.parse(response.body)
+    end
+
+    # Get a single KeyPair
+    def key_pair(key_name)
+      key_pairs(key_name)[0]
+    end
+    
+    # Create a new KeyPair
+    def create_key_pair(key_name)
+      action = 'CreateKeyPair'
+      params = {
+        'Action'  => action,
+        'KeyName' => key_name
+      }
+
+      response = send_request(params)
+      parser = Awsum::Ec2::KeyPairParser.new(self)
+      parser.parse(response.body)[0]
+    end
+    
+    # Delete a new KeyPair
+    def delete_key_pair(key_name)
+      action = 'DeleteKeyPair'
+      params = {
+        'Action'  => action,
+        'KeyName' => key_name
       }
 
       response = send_request(params)
