@@ -6,6 +6,7 @@ require 'ec2/availability_zone'
 require 'ec2/image'
 require 'ec2/instance'
 require 'ec2/keypair'
+require 'ec2/security_group'
 require 'ec2/snapshot'
 require 'ec2/region'
 require 'ec2/volume'
@@ -23,10 +24,10 @@ module Awsum
 
     # Retrieve a list of available Images
     #
-    # Options:
+    # ===Options:
     # * <tt>:image_ids</tt> - array of Image id's, default: []
     # * <tt>:owners</tt> - array of owner id's, default: []
-    # * <tt>:executable_by</tt> - array of user id's who have executable permission, #   default: []
+    # * <tt>:executable_by</tt> - array of user id's who have executable permission, default: []
     def images(options = {})
       options = {:image_ids => [], :owners => [], :executable_by => []}.merge(options)
       action = 'DescribeImages'
@@ -80,7 +81,7 @@ module Awsum
 
     # Launch an ec2 Instance
     #
-    # Options:
+    # ===Options:
     # * <tt>:min</tt> - The minimum number of instances to launch. Default: 1
     # * <tt>:max</tt> - The maximum number of instances to launch. Default: 1
     # * <tt>:key_name</tt> - The name of the key pair with which to launch instances
@@ -198,7 +199,7 @@ module Awsum
 
     # Create a new volume
     #
-    # Options:
+    # ===Options:
     # * <tt>:size</tt> - The size of the volume to be created (in GB) (<b>NOTE:</b> Required if you are not creating from a snapshot)
     # * <tt>:snapshot_id</tt> - The snapshot id from which to create the volume
     #
@@ -234,7 +235,7 @@ module Awsum
 
     # Detach a volume from an instance
     #
-    # Options
+    # ===Options
     # * <tt>:instance_id</tt> - The ID of the instance from which the volume will detach
     # * <tt>:device</tt> - The device name
     # * <tt>:force</tt> - Whether to force the detachment. <b>NOTE:</b> If forced you may have data corruption issues.
@@ -405,7 +406,7 @@ module Awsum
       response.is_a?(Net::HTTPSuccess)
     end
 
-    # Releasees an associated Address
+    # Releases an associated Address
     #
     # <b>NOTE:</b> This is not a direct call to the Amazon web service. This is a safe operation that will first check to see if the address is allocated to an instance and fail if it is
     def release_address(public_ip)
@@ -425,7 +426,7 @@ module Awsum
       end
     end
 
-    # Releasees an associated Address
+    # Releases an associated Address
     #
     # <b>NOTE:</b> This will disassociate an address automatically if it is associated with an instance
     def release_address!(public_ip)
@@ -470,13 +471,136 @@ module Awsum
       parser.parse(response.body)[0]
     end
     
-    # Delete a new KeyPair
+    # Delete a KeyPair
     def delete_key_pair(key_name)
       action = 'DeleteKeyPair'
       params = {
         'Action'  => action,
         'KeyName' => key_name
       }
+
+      response = send_request(params)
+      response.is_a?(Net::HTTPSuccess)
+    end
+    
+    # List SecurityGroup(s)
+    def security_groups(*group_names)
+      action = 'DescribeSecurityGroups'
+      params = {
+        'Action' => action
+      }
+      params.merge!(array_to_params(group_names, 'GroupName'))
+
+      response = send_request(params)
+      parser = Awsum::Ec2::SecurityGroupParser.new(self)
+      parser.parse(response.body)
+    end
+
+    # Get a single SecurityGroup
+    def security_group(group_name)
+      security_groups(group_name)[0]
+    end
+    
+    # Create a new SecurityGroup
+    def create_security_group(name, description)
+      action = 'CreateSecurityGroup'
+      params = {
+        'Action'           => action,
+        'GroupName'        => name,
+        'GroupDescription' => description
+      }
+
+      response = send_request(params)
+      response.is_a?(Net::HTTPSuccess)
+    end
+    
+    # Delete a SecurityGroup
+    def delete_security_group(group_name)
+      action = 'DeleteSecurityGroup'
+      params = {
+        'Action'  => action,
+        'GroupName' => group_name
+      }
+
+      response = send_request(params)
+      response.is_a?(Net::HTTPSuccess)
+    end
+
+    # Authorize access on a specific security group
+    #
+    # ===Options:
+    # ====User/Group access
+    # <tt>:source_security_group_name</tt> - Name of the security group to authorize access to when operating on a user/group pair
+    # <tt>:source_security_group_owner_id</tt> - Owner of the security group to authorize access to when operating on a user/group pair
+    # ====CIDR IP access
+    # <tt>:ip_protocol</tt> - IP protocol to authorize access to when operating on a CIDR IP (tcp, udp or icmp) (default: tcp)
+    # <tt>:from_port</tt> - Bottom of port range to authorize access to when operating on a CIDR IP. This contains the ICMP type if ICMP is being authorized.
+    # <tt>:to_port</tt> - Top of port range to authorize access to when operating on a CIDR IP. This contains the ICMP type if ICMP is being authorized.
+    # <tt>:cidr_ip</tt> - CIDR IP range to authorize access to when operating on a CIDR IP. (default: 0.0.0.0/0)
+    def authorize_security_group_ingress(group_name, options = {})
+      got_at_least_one_user_group_option = !options[:source_security_group_name].nil? || !options[:source_security_group_owner_id].nil?
+      got_user_group_options = !options[:source_security_group_name].nil? && !options[:source_security_group_owner_id].nil?
+      got_at_least_one_cidr_option = !options[:ip_protocol].nil? || !options[:from_port].nil? || !options[:to_port].nil? || !options[:cidr_ip].nil?
+      #Add in defaults
+      options = {:cidr_ip => '0.0.0.0/0'}.merge(options) if got_at_least_one_cidr_option
+      options = {:ip_protocol => 'tcp'}.merge(options) if got_at_least_one_cidr_option
+      got_cidr_options = !options[:ip_protocol].nil? && !options[:from_port].nil? && !options[:to_port].nil? && !options[:cidr_ip].nil?
+      raise ArgumentError.new('Can only authorize user/group or CIDR IP, not both') if got_at_least_one_user_group_option && got_at_least_one_cidr_option
+      raise ArgumentError.new('Need all user/group options when authorizing user/group access') if got_at_least_one_user_group_option && !got_user_group_options
+      raise ArgumentError.new('Need all CIDR IP options when authorizing CIDR IP access') if got_at_least_one_cidr_option && !got_cidr_options
+      raise ArgumentError.new('ip_protocol can only be one of tcp, udp or icmp') if got_at_least_one_cidr_option && !%w(tcp udp icmp).detect{|p| p == options[:ip_protocol] }
+
+      action = 'AuthorizeSecurityGroupIngress'
+      params = {
+        'Action'    => action,
+        'GroupName' => group_name
+      }
+      params['SourceSecurityGroupName'] = options[:source_security_group_name] unless options[:source_security_group_name].nil?
+      params['SourceSecurityGroupOwnerId'] = options[:source_security_group_owner_id] unless options[:source_security_group_owner_id].nil?
+      params['IpProtocol'] = options[:ip_protocol] unless options[:ip_protocol].nil?
+      params['FromPort'] = options[:from_port] unless options[:from_port].nil?
+      params['ToPort'] = options[:to_port] unless options[:to_port].nil?
+      params['CidrIp'] = options[:cidr_ip] unless options[:cidr_ip].nil?
+
+      response = send_request(params)
+      response.is_a?(Net::HTTPSuccess)
+    end
+
+    # Revoke access on a specific SecurityGroup
+    #
+    # ===Options:
+    # ====User/Group access
+    # <tt>:source_security_group_name</tt> - Name of the security group to authorize access to when operating on a user/group pair
+    # <tt>:source_security_group_owner_id</tt> - Owner of the security group to authorize access to when operating on a user/group pair
+    # ====CIDR IP access
+    # <tt>:ip_protocol</tt> - IP protocol to authorize access to when operating on a CIDR IP (tcp, udp or icmp) (default: tcp)
+    # <tt>:from_port</tt> - Bottom of port range to authorize access to when operating on a CIDR IP. This contains the ICMP type if ICMP is being authorized.
+    # <tt>:to_port</tt> - Top of port range to authorize access to when operating on a CIDR IP. This contains the ICMP type if ICMP is being authorized.
+    # <tt>:cidr_ip</tt> - CIDR IP range to authorize access to when operating on a CIDR IP. (default: 0.0.0.0/0)
+    def revoke_security_group_ingress(group_name, options = {})
+      got_at_least_one_user_group_option = !options[:source_security_group_name].nil? || !options[:source_security_group_owner_id].nil?
+      got_user_group_options = !options[:source_security_group_name].nil? && !options[:source_security_group_owner_id].nil?
+      got_at_least_one_cidr_option = !options[:ip_protocol].nil? || !options[:from_port].nil? || !options[:to_port].nil? || !options[:cidr_ip].nil?
+      #Add in defaults
+      options = {:cidr_ip => '0.0.0.0/0'}.merge(options) if got_at_least_one_cidr_option
+      options = {:ip_protocol => 'tcp'}.merge(options) if got_at_least_one_cidr_option
+      got_cidr_options = !options[:ip_protocol].nil? && !options[:from_port].nil? && !options[:to_port].nil? && !options[:cidr_ip].nil?
+      raise ArgumentError.new('Can only authorize user/group or CIDR IP, not both') if got_at_least_one_user_group_option && got_at_least_one_cidr_option
+      raise ArgumentError.new('Need all user/group options when revoking user/group access') if got_at_least_one_user_group_option && !got_user_group_options
+      raise ArgumentError.new('Need all CIDR IP options when revoking CIDR IP access') if got_at_least_one_cidr_option && !got_cidr_options
+      raise ArgumentError.new('ip_protocol can only be one of tcp, udp or icmp') if got_at_least_one_cidr_option && !%w(tcp udp icmp).detect{|p| p == options[:ip_protocol] }
+
+      action = 'RevokeSecurityGroupIngress'
+      params = {
+        'Action'    => action,
+        'GroupName' => group_name
+      }
+      params['SourceSecurityGroupName'] = options[:source_security_group_name] unless options[:source_security_group_name].nil?
+      params['SourceSecurityGroupOwnerId'] = options[:source_security_group_owner_id] unless options[:source_security_group_owner_id].nil?
+      params['IpProtocol'] = options[:ip_protocol] unless options[:ip_protocol].nil?
+      params['FromPort'] = options[:from_port] unless options[:from_port].nil?
+      params['ToPort'] = options[:to_port] unless options[:to_port].nil?
+      params['CidrIp'] = options[:cidr_ip] unless options[:cidr_ip].nil?
 
       response = send_request(params)
       response.is_a?(Net::HTTPSuccess)

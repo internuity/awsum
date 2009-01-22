@@ -807,84 +807,220 @@ class ImagesTest < Test::Unit::TestCase
         assert @ec2.delete_key_pair('test-keypair')
       end
     end
+  end
 
-#    context "an image" do
-#      setup {
-#        xml = load_fixture('ec2/image')
-#        response = stub('Http Response', :body => xml)
-#        @ec2.expects(:send_request).returns(response)
-#
-#        @image = @ec2.image 'ari-f9c22690'
-#      }
-#
-#      should "be able to create an instance" do
-#        xml = load_fixture('ec2/instance')
-#        response = stub('Http Response', :body => xml)
-#        @ec2.expects(:send_request).returns(response)
-#
-#        instances = @image.run
-#        assert_equal Awsum::Ec2::Instance, instances[0].class
-#      end
-#    end
-#
-#    context "register an image" do
-#      setup {
-#        xml = load_fixture('ec2/register_image')
-#        response = stub('Http Response', :body => xml)
-#        @ec2.expects(:send_request).returns(response)
-#
-#        @image_id = @ec2.register_image('s3.bucket.location')
-#      }
-#
-#      should "return an image id" do
-#        assert_equal 'ami-4782652e', @image_id
-#      end
-#    end
-#
-#    context "deregistering an image" do
-#      setup {
-#        xml = load_fixture('ec2/deregister_image')
-#        response = stub('Http Response', :body => xml)
-#        @ec2.expects(:send_request).returns(response)
-#        response.expects(:is_a?).returns(true)
-#      }
-#
-#      should "return true" do
-#        assert @ec2.deregister_image('ami-4782652e')
-#      end
-#    end
-#
-#    context "an image" do
-#      setup {
-#        xml = load_fixture('ec2/image')
-#        response = stub('Http Response', :body => xml)
-#        @ec2.expects(:send_request).returns(response)
-#
-#        @image = @ec2.image('ami-ABCDEF')
-#      }
-#
-#      should "be able to deregister itself" do
-#        xml = load_fixture('ec2/deregister_image')
-#        response = stub('Http Response', :body => xml)
-#        @ec2.expects(:send_request).returns(response)
-#        response.expects(:is_a?).returns(true)
-#
-#        assert @image.deregister
-#      end
-#
-#      should "be able to reregister itself" do
-#        requests = sequence('requests')
-#        xml = load_fixture('ec2/deregister_image')
-#        response = stub('Http Response', :body => xml)
-#        @ec2.expects(:send_request).returns(response).in_sequence(requests)
-#        response.expects(:is_a?).returns(true).in_sequence(requests)
-#
-#        xml = load_fixture('ec2/register_image')
-#        response = stub('Http Response', :body => xml)
-#        @ec2.expects(:send_request).returns(response).in_sequence(requests)
-#
-#        assert @image.reregister
-#      end
-#    end
+  context "Security Groups: " do
+    context "retrieving a list of security groups" do
+      setup {
+        xml = load_fixture('ec2/security_groups')
+        response = stub('Http Response', :body => xml)
+        @ec2.expects(:send_request).returns(response)
+
+        @result = @ec2.security_groups
+      }
+
+      should "return an array of security groups" do
+        assert @result.is_a?(Array)
+        assert_equal Awsum::Ec2::SecurityGroup, @result[0].class
+      end
+    end
+
+    context "retrieving a single security group by name" do
+      setup {
+        xml = load_fixture('ec2/security_groups')
+        response = stub('Http Response', :body => xml)
+        @ec2.expects(:send_request).returns(response)
+
+        @result = @ec2.security_group('default')
+      }
+
+      should "return a single security group" do
+        assert_equal Awsum::Ec2::SecurityGroup, @result.class
+      end
+    end
+
+    context "creating a security group" do
+      setup {
+        xml = load_fixture('ec2/create_security_group')
+        response = stub('Http Response', :body => xml)
+        @ec2.expects(:send_request).returns(response)
+        response.expects(:is_a?).returns(true)
+      }
+
+      should "succeed" do
+        assert @ec2.create_security_group('test', 'test group')
+      end
+    end
+
+    context "deleting a security group" do
+      setup {
+        xml = load_fixture('ec2/delete_security_group')
+        response = stub('Http Response', :body => xml)
+        @ec2.expects(:send_request).returns(response)
+        response.expects(:is_a?).returns(true)
+      }
+
+      should "succeed" do
+        assert @ec2.delete_security_group('test')
+      end
+    end
+
+    context "authorizing group access" do
+      setup {
+        xml = load_fixture('ec2/authorize_owner_group_access')
+        response = stub('Http Response', :body => xml)
+        @ec2.expects(:send_request).returns(response)
+        response.expects(:is_a?).returns(true)
+      }
+
+      should "succeed" do
+        assert @ec2.authorize_security_group_ingress('test', :source_security_group_name => 'default', :source_security_group_owner_id => '111111111111')
+      end
+    end
+
+    context "authorizing ip access" do
+      setup {
+        xml = load_fixture('ec2/authorize_ip_access')
+        response = stub('Http Response', :body => xml)
+        @ec2.expects(:send_request).returns(response)
+        response.expects(:is_a?).returns(true)
+      }
+
+      should "succeed" do
+        assert @ec2.authorize_security_group_ingress('test', :ip_protocol => 'tcp', :from_port => 80, :to_port => 80, :cidr_ip => '0.0.0.0/0')
+      end
+    end
+
+    context "sending ip authorization options to a user/group authorization request" do
+      should "raise an error" do
+        assert_raise ArgumentError do
+          @ec2.authorize_security_group_ingress('test', :ip_protocol => 'tcp', :from_port => 80, :to_port => 80, :cidr_ip => '0.0.0.0/0', :source_security_group_name => 'default')
+        end
+      end
+    end
+
+    context "sending user/group authorization options to a ip authorization request" do
+      should "raise an error" do
+        assert_raise ArgumentError do
+          @ec2.authorize_security_group_ingress('test', :source_security_group_name => 'default', :source_security_group_owner_id => '111111111111', :from_port => 80, :to_port => 80)
+        end
+      end
+    end
+
+    context "sending all options to an authorization request" do
+      should "raise an error" do
+        assert_raise ArgumentError do
+          @ec2.authorize_security_group_ingress('test', :source_security_group_name => 'default', :source_security_group_owner_id => '111111111111', :ip_protocol => 'tcp', :from_port => 80, :to_port => 80, :cidr_ip => '0.0.0.0/0')
+        end
+      end
+    end
+
+    context "including a wrong protocol in an authorization request" do
+      should "raise an error" do
+        assert_raise ArgumentError do
+          @ec2.authorize_security_group_ingress('test', :ip_protocol => 'test', :from_port => 80, :to_port => 80, :cidr_ip => '0.0.0.0/0')
+        end
+      end
+    end
+
+    context "revoking ip access" do
+      setup {
+        xml = load_fixture('ec2/revoke_ip_access')
+        response = stub('Http Response', :body => xml)
+        @ec2.expects(:send_request).returns(response)
+        response.expects(:is_a?).returns(true)
+      }
+
+      should "succeed" do
+        assert @ec2.revoke_security_group_ingress('test', :ip_protocol => 'tcp', :from_port => 80, :to_port => 80, :cidr_ip => '0.0.0.0/0')
+      end
+    end
+
+    context "sending ip revokation options to a user/group revokation request" do
+      should "raise an error" do
+        assert_raise ArgumentError do
+          @ec2.revoke_security_group_ingress('test', :ip_protocol => 'tcp', :from_port => 80, :to_port => 80, :cidr_ip => '0.0.0.0/0', :source_security_group_name => 'default')
+        end
+      end
+    end
+
+    context "sending user/group revokation options to a ip revokation request" do
+      should "raise an error" do
+        assert_raise ArgumentError do
+          @ec2.revoke_security_group_ingress('test', :source_security_group_name => 'default', :source_security_group_owner_id => '111111111111', :from_port => 80, :to_port => 80)
+        end
+      end
+    end
+
+    context "sending all options to an revokation request" do
+      should "raise an error" do
+        assert_raise ArgumentError do
+          @ec2.revoke_security_group_ingress('test', :source_security_group_name => 'default', :source_security_group_owner_id => '111111111111', :ip_protocol => 'tcp', :from_port => 80, :to_port => 80, :cidr_ip => '0.0.0.0/0')
+        end
+      end
+    end
+
+    context "including a wrong protocol in a rovokation request" do
+      should "raise an error" do
+        assert_raise ArgumentError do
+          @ec2.revoke_security_group_ingress('test', :ip_protocol => 'test', :from_port => 80, :to_port => 80, :cidr_ip => '0.0.0.0/0')
+        end
+      end
+    end
+
+    context "a security group" do
+      setup {
+        xml = load_fixture('ec2/security_groups')
+        response = stub('Http Response', :body => xml)
+        @ec2.expects(:send_request).returns(response)
+
+        @security_group = @ec2.security_group('default')
+      }
+
+      should "be able to authorize a group" do
+        xml = load_fixture('ec2/authorize_owner_group_access')
+        response = stub('Http Response', :body => xml)
+        @ec2.expects(:send_request).returns(response)
+        response.expects(:is_a?).returns(true)
+
+        assert @security_group.authorize_group('test', '111111111111')
+      end
+
+      should "be able to revoke a group" do
+        xml = load_fixture('ec2/revoke_owner_group_access')
+        response = stub('Http Response', :body => xml)
+        @ec2.expects(:send_request).returns(response)
+        response.expects(:is_a?).returns(true)
+
+        assert @security_group.revoke_group('test', '111111111111')
+      end
+
+      should "be able to authorize an ip" do
+        xml = load_fixture('ec2/authorize_ip_access')
+        response = stub('Http Response', :body => xml)
+        @ec2.expects(:send_request).returns(response)
+        response.expects(:is_a?).returns(true)
+
+        assert @security_group.authorize_ip(80, 80, 'tcp', '0.0.0.0/0')
+      end
+
+      should "be able to revoke an ip" do
+        xml = load_fixture('ec2/revoke_ip_access')
+        response = stub('Http Response', :body => xml)
+        @ec2.expects(:send_request).returns(response)
+        response.expects(:is_a?).returns(true)
+
+        assert @security_group.revoke_ip(80, 80, 'tcp', '0.0.0.0/0')
+      end
+
+      should "be able to delete itself" do
+        xml = load_fixture('ec2/delete_security_group')
+        response = stub('Http Response', :body => xml)
+        @ec2.expects(:send_request).returns(response)
+        response.expects(:is_a?).returns(true)
+
+        assert @security_group.delete
+      end
+    end
   end
 end

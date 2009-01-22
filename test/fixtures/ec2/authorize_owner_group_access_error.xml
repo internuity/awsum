@@ -1,0 +1,2 @@
+<?xml version="1.0"?>
+<Response><Errors><Error><Code>InvalidParameterCombination</Code><Message>The parameter 'CidrIp' may not be used in combination with 'SourceSecurityGroupOwnerId'</Message></Error></Errors><RequestID>6364d411-bdf0-4718-a2c9-219ebec33827</RequestID></Response>

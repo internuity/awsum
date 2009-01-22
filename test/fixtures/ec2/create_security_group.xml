@@ -1,0 +1,5 @@
+<?xml version="1.0"?>
+<CreateSecurityGroupResponse xmlns="http://ec2.amazonaws.com/doc/2008-12-01/">
+    <requestId>d11930fe-b8c5-461a-9259-c053a0c26fdf</requestId>
+    <return>true</return>
+</CreateSecurityGroupResponse>

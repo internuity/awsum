@@ -39,7 +39,7 @@ module Awsum
 
       # launches instances of this image
       #
-      # Options:
+      # ===Options:
       # * <tt>:min</tt> - The minimum number of instances to launch. Default: 1
       # * <tt>:max</tt> - The maximum number of instances to launch. Default: 1
       # * <tt>:key_name</tt> - The name of the key pair with which to launch instances

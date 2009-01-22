@@ -1,0 +1,5 @@
+<?xml version="1.0"?>
+<RevokeSecurityGroupIngressResponse xmlns="http://ec2.amazonaws.com/doc/2008-12-01/">
+    <requestId>5060e829-b4f9-4957-8d15-f31e27d9a6ff</requestId>
+    <return>true</return>
+</RevokeSecurityGroupIngressResponse>
