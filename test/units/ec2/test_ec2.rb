@@ -134,7 +134,7 @@ class ImagesTest < Test::Unit::TestCase
     context "Block device map" do
       setup {
         xml = load_fixture('ec2/run_instances')
-        response = stub('Http Response', :body => xml)
+        response = stub('Http Response', :body => xml, :code => 200, :is_a? => true)
         http = mock('HTTP', :use_ssl= => nil, :verify_mode= => nil)
         http.expects(:send_request).with{|method, uri, data, headers| @uri = uri}.returns(response)
         Net::HTTP.expects(:new).returns(http)

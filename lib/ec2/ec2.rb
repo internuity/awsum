@@ -12,12 +12,52 @@ require 'ec2/region'
 require 'ec2/volume'
 
 module Awsum
-  #--
-  #TODO: Write overall class documentation with usage examples
+  # Handles all interaction with Amazon EC2
+  #
+  # ==Getting Started
+  # Create an Awsum::Ec2 object and begin calling methods on it.
+  #   require 'rubygems'
+  #   require 'awsum'
+  #   ec2 = Awsum::Ec2.new('your access id', 'your secret key')
+  #   images = ec2.my_images
+  #   ...
+  #
+  # All calls to EC2 can be done directly in this class, or through a more object oriented way through the various returned classes
+  #
+  # ==Examples
+  #   ec2.image('ami-ABCDEF').run
+  #
+  #   ec2.instance('i-123456789').volumes.each do |vol|
+  #     vol.create_snapsot
+  #   end
+  #
+  #   ec2.regions.each do |region|
+  #     region.use
+  #       images.each do |img|
+  #         puts "#{img.id} - #{region.name}"
+  #       end
+  #     end
+  #   end
+  #
+  # ==Errors
+  # All methods will raise an Awsum::Error if an error is returned from Amazon
+  #
+  # ==Missing Methods
+  # * ConfirmProductInstance
+  # * ModifyImageAttribute
+  # * DescribeImageAttribute
+  # * ResetImageAttribute
+  # If you need any of this functionality, please consider getting involved and help complete this library.
   class Ec2
     include Awsum::Requestable
 
-    def initialize(access_key, secret_key)
+    # Create an new ec2 instance
+    #
+    # The access_key and secret_key are both required to do any meaningful work.
+    #
+    # If you want to get these keys from environment variables, you can do that in your code as follows:
+    #   ec2 = Awsum::Ec2.new(ENV['AWS_ACCESS_KEY_ID'], ENV['AWS_SECRET_ACCESS_KEY'])
+    def initialize(access_key = nil, secret_key = nil)
       @access_key = access_key
       @secret_key = secret_key
     end
@@ -530,13 +570,13 @@ module Awsum
     #
     # ===Options:
     # ====User/Group access
-    # <tt>:source_security_group_name</tt> - Name of the security group to authorize access to when operating on a user/group pair
-    # <tt>:source_security_group_owner_id</tt> - Owner of the security group to authorize access to when operating on a user/group pair
+    # * <tt>:source_security_group_name</tt> - Name of the security group to authorize access to when operating on a user/group pair
+    # * <tt>:source_security_group_owner_id</tt> - Owner of the security group to authorize access to when operating on a user/group pair
     # ====CIDR IP access
-    # <tt>:ip_protocol</tt> - IP protocol to authorize access to when operating on a CIDR IP (tcp, udp or icmp) (default: tcp)
-    # <tt>:from_port</tt> - Bottom of port range to authorize access to when operating on a CIDR IP. This contains the ICMP type if ICMP is being authorized.
-    # <tt>:to_port</tt> - Top of port range to authorize access to when operating on a CIDR IP. This contains the ICMP type if ICMP is being authorized.
-    # <tt>:cidr_ip</tt> - CIDR IP range to authorize access to when operating on a CIDR IP. (default: 0.0.0.0/0)
+    # * <tt>:ip_protocol</tt> - IP protocol to authorize access to when operating on a CIDR IP (tcp, udp or icmp) (default: tcp)
+    # * <tt>:from_port</tt> - Bottom of port range to authorize access to when operating on a CIDR IP. This contains the ICMP type if ICMP is being authorized.
+    # * <tt>:to_port</tt> - Top of port range to authorize access to when operating on a CIDR IP. This contains the ICMP type if ICMP is being authorized.
+    # * <tt>:cidr_ip</tt> - CIDR IP range to authorize access to when operating on a CIDR IP. (default: 0.0.0.0/0)
     def authorize_security_group_ingress(group_name, options = {})
       got_at_least_one_user_group_option = !options[:source_security_group_name].nil? || !options[:source_security_group_owner_id].nil?
       got_user_group_options = !options[:source_security_group_name].nil? && !options[:source_security_group_owner_id].nil?
@@ -570,13 +610,13 @@ module Awsum
     #
     # ===Options:
     # ====User/Group access
-    # <tt>:source_security_group_name</tt> - Name of the security group to authorize access to when operating on a user/group pair
-    # <tt>:source_security_group_owner_id</tt> - Owner of the security group to authorize access to when operating on a user/group pair
+    # * <tt>:source_security_group_name</tt> - Name of the security group to authorize access to when operating on a user/group pair
+    # * <tt>:source_security_group_owner_id</tt> - Owner of the security group to authorize access to when operating on a user/group pair
     # ====CIDR IP access
-    # <tt>:ip_protocol</tt> - IP protocol to authorize access to when operating on a CIDR IP (tcp, udp or icmp) (default: tcp)
-    # <tt>:from_port</tt> - Bottom of port range to authorize access to when operating on a CIDR IP. This contains the ICMP type if ICMP is being authorized.
-    # <tt>:to_port</tt> - Top of port range to authorize access to when operating on a CIDR IP. This contains the ICMP type if ICMP is being authorized.
-    # <tt>:cidr_ip</tt> - CIDR IP range to authorize access to when operating on a CIDR IP. (default: 0.0.0.0/0)
+    # * <tt>:ip_protocol</tt> - IP protocol to authorize access to when operating on a CIDR IP (tcp, udp or icmp) (default: tcp)
+    # * <tt>:from_port</tt> - Bottom of port range to authorize access to when operating on a CIDR IP. This contains the ICMP type if ICMP is being authorized.
+    # * <tt>:to_port</tt> - Top of port range to authorize access to when operating on a CIDR IP. This contains the ICMP type if ICMP is being authorized.
+    # * <tt>:cidr_ip</tt> - CIDR IP range to authorize access to when operating on a CIDR IP. (default: 0.0.0.0/0)
     def revoke_security_group_ingress(group_name, options = {})
       got_at_least_one_user_group_option = !options[:source_security_group_name].nil? || !options[:source_security_group_owner_id].nil?
       got_user_group_options = !options[:source_security_group_name].nil? && !options[:source_security_group_owner_id].nil?

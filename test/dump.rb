@@ -14,14 +14,6 @@ require File.join(ROOT, 'lib', 'awsum.rb')
 # Exampe
 # ruby dump.rb -a ABC -s XYZ -c "ec2.images"
 
-module Awsum
-  class Parser
-    def parse(xml_text)
-      puts xml_text
-    end
-  end
-end
-
 #Parse command line
 access_key = nil
 secret_key = nil
@@ -36,6 +28,8 @@ ARGV.each_with_index do |arg, i|
       command = ARGV[i+1]
   end
 end
+
+ENV['DEBUG'] = 'true'
 
 ec2 = Awsum::Ec2.new(access_key, secret_key)
 eval command

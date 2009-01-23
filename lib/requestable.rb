@@ -1,5 +1,6 @@
 require 'net/https'
 require 'uri'
+require 'error'
 
 module Awsum
   module Requestable #:nodoc:
@@ -41,8 +42,12 @@ private
 
       puts "URL: #{url}" if ENV['DEBUG']
       response = http.send_request('GET', url.request_uri, nil, headers)
-      puts "Response:\n#{response.body}" if ENV['DEBUG']
-      response
+      puts "Response:\n#{response.code}\n#{response.body}" if ENV['DEBUG']
+      if response.is_a?(Net::HTTPSuccess)
+        response
+      else
+        raise Awsum::Error.new(response)
+      end
     end
 
     def array_to_params(arr, param_name)
