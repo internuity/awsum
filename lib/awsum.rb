@@ -10,6 +10,7 @@ require 'support'
 require 'requestable'
 require 'parser'
 require 'ec2/ec2'
+require 's3/s3'
 
 module Awsum
   

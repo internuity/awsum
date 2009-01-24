@@ -1,6 +1,3 @@
-require 'cgi'
-require 'base64'
-require 'openssl'
 require 'ec2/address'
 require 'ec2/availability_zone'
 require 'ec2/image'

@@ -1,6 +1,9 @@
 require 'net/https'
 require 'uri'
 require 'error'
+require 'cgi'
+require 'base64'
+require 'openssl'
 
 module Awsum
   module Requestable #:nodoc:
