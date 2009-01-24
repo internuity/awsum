@@ -8,8 +8,11 @@ require 'openssl'
 module Awsum
   module Requestable #:nodoc:
 
-private
-    def send_request(params)
+  private
+    # Sends a request with query parameters
+    #
+    # Used for EC2 requests
+    def send_query_request(params)
       standard_options = {
         'AWSAccessKeyId'   => @access_key,
         'Version'          => API_VERSION,
@@ -20,12 +23,12 @@ private
       params = standard_options.merge(params)
 
       #Put parameters into query string format
-      params_string = params.delete_if{|k,v| v.nil?}.sort{|a,b| a[0] <=> b[0].to_s}.collect{|key, val| "#{CGI::escape(key)}=#{CGI::escape(val.to_s)}"}.join('&')
+      params_string = params.delete_if{|k,v| v.nil?}.sort{|a,b| a[0].to_s <=> b[0].to_s}.collect{|key, val| "#{CGI::escape(key.to_s)}=#{CGI::escape(val.to_s)}"}.join('&')
       params_string.gsub!('+', '%20')
 
       #Create request signature
       signature_string = "GET\n#{host}\n/\n#{params_string}"
-      signature = Base64::encode64(OpenSSL::HMAC.digest(OpenSSL::Digest::Digest.new('sha256'), @secret_key, signature_string)).gsub(/\n/, '')
+      signature = sign(signature_string, 'sha256')
 
       #Attach signature to query string
       params_string << "&Signature=#{CGI::escape(signature)}"
@@ -53,6 +56,7 @@ private
       end
     end
 
+    # Converts an array of paramters into <param_name>.<num> format
     def array_to_params(arr, param_name)
       arr = [arr] unless arr.is_a?(Array)
       params = {}
@@ -60,6 +64,14 @@ private
         params["#{param_name}.#{i+1}"] = value
       end
       params
+    end
+
+    # Sign a string with a digest, wrap in HMAC digest and base64 encode
+    #
+    # ===Returns
+    # base64 encoded string with newlines removed
+    def sign(string, digest = 'sha1')
+      Base64::encode64(OpenSSL::HMAC.digest(OpenSSL::Digest::Digest.new(digest), @secret_key, string)).gsub(/\n/, '')
     end
   end
 end

@@ -76,7 +76,7 @@ module Awsum
       params.merge!(array_to_params(options[:owners], "Owner"))
       params.merge!(array_to_params(options[:executable_by], "ExecutableBy"))
 
-      response = send_request(params)
+      response = send_query_request(params)
       parser = Awsum::Ec2::ImageParser.new(self)
       parser.parse(response.body)
     end
@@ -99,7 +99,7 @@ module Awsum
           'ImageLocation' => image_location
         }
 
-      response = send_request(params)
+      response = send_query_request(params)
       parser = Awsum::Ec2::RegisterImageParser.new(self)
       parser.parse(response.body)
     end
@@ -112,7 +112,7 @@ module Awsum
           'ImageId' => image_id
         }
 
-      response = send_request(params)
+      response = send_query_request(params)
       response.is_a?(Net::HTTPSuccess)
     end
 
@@ -155,7 +155,7 @@ module Awsum
       end
       params.merge!(array_to_params(options[:security_groups], "SecurityGroup"))
 
-      response = send_request(params)
+      response = send_query_request(params)
       parser = Awsum::Ec2::InstanceParser.new(self)
       parser.parse(response.body)
     end
@@ -169,7 +169,7 @@ module Awsum
       }
       params.merge!(array_to_params(instance_ids, 'InstanceId'))
 
-      response = send_request(params)
+      response = send_query_request(params)
       parser = Awsum::Ec2::InstanceParser.new(self)
       parser.parse(response.body)
     end
@@ -212,7 +212,7 @@ module Awsum
       }
       params.merge!(array_to_params(instance_ids, 'InstanceId'))
 
-      response = send_request(params)
+      response = send_query_request(params)
       response.is_a?(Net::HTTPSuccess)
     end
 
@@ -224,7 +224,7 @@ module Awsum
       }
       params.merge!(array_to_params(volume_ids, 'VolumeId'))
 
-      response = send_request(params)
+      response = send_query_request(params)
       parser = Awsum::Ec2::VolumeParser.new(self)
       parser.parse(response.body)
     end
@@ -251,7 +251,7 @@ module Awsum
       params['Size'] = options[:size] unless options[:size].blank?
       params['SnapshotId'] = options[:snapshot_id] unless options[:snapshot_id].blank?
 
-      response = send_request(params)
+      response = send_query_request(params)
       parser = Awsum::Ec2::VolumeParser.new(self)
       parser.parse(response.body)[0]
     end
@@ -266,7 +266,7 @@ module Awsum
         'Device'     => device
       }
 
-      response = send_request(params)
+      response = send_query_request(params)
       response.is_a?(Net::HTTPSuccess)
     end
 
@@ -286,7 +286,7 @@ module Awsum
       params['Device'] = options[:device] unless options[:device].blank?
       params['Force'] = options[:force] unless options[:force].blank?
 
-      response = send_request(params)
+      response = send_query_request(params)
       response.is_a?(Net::HTTPSuccess)
     end
 
@@ -298,7 +298,7 @@ module Awsum
         'VolumeId'   => volume_id
       }
 
-      response = send_request(params)
+      response = send_query_request(params)
       response.is_a?(Net::HTTPSuccess)
     end
 
@@ -310,7 +310,7 @@ module Awsum
         'VolumeId' => volume_id
       }
 
-      response = send_request(params)
+      response = send_query_request(params)
       parser = Awsum::Ec2::SnapshotParser.new(self)
       parser.parse(response.body)[0]
     end
@@ -323,7 +323,7 @@ module Awsum
       }
       params.merge!(array_to_params(snapshot_ids, 'SnapshotId'))
 
-      response = send_request(params)
+      response = send_query_request(params)
       parser = Awsum::Ec2::SnapshotParser.new(self)
       parser.parse(response.body)
     end
@@ -341,7 +341,7 @@ module Awsum
         'SnapshotId' => snapshot_id
       }
 
-      response = send_request(params)
+      response = send_query_request(params)
       response.is_a?(Net::HTTPSuccess)
     end
 
@@ -353,7 +353,7 @@ module Awsum
       }
       params.merge!(array_to_params(zone_names, 'ZoneName'))
 
-      response = send_request(params)
+      response = send_query_request(params)
       parser = Awsum::Ec2::AvailabilityZoneParser.new(self)
       parser.parse(response.body)
     end
@@ -366,7 +366,7 @@ module Awsum
       }
       params.merge!(array_to_params(region_names, 'Region'))
 
-      response = send_request(params)
+      response = send_query_request(params)
       parser = Awsum::Ec2::RegionParser.new(self)
       parser.parse(response.body)
     end
@@ -384,7 +384,7 @@ module Awsum
       }
       params.merge!(array_to_params(public_ips, 'PublicIp'))
 
-      response = send_request(params)
+      response = send_query_request(params)
       parser = Awsum::Ec2::AddressParser.new(self)
       parser.parse(response.body)
     end
@@ -403,7 +403,7 @@ module Awsum
         'Action' => action
       }
 
-      response = send_request(params)
+      response = send_query_request(params)
       parser = Awsum::Ec2::AddressParser.new(self)
       parser.parse(response.body)[0]
     end
@@ -423,7 +423,7 @@ module Awsum
         'PublicIp'   => public_ip
       }
 
-      response = send_request(params)
+      response = send_query_request(params)
       response.is_a?(Net::HTTPSuccess)
     end
 
@@ -439,7 +439,7 @@ module Awsum
         'PublicIp'   => public_ip
       }
 
-      response = send_request(params)
+      response = send_query_request(params)
       response.is_a?(Net::HTTPSuccess)
     end
 
@@ -456,7 +456,7 @@ module Awsum
           'PublicIp' => public_ip
         }
 
-        response = send_request(params)
+        response = send_query_request(params)
         response.is_a?(Net::HTTPSuccess)
       else
         raise 'Address is currently allocated' #FIXME: Add a proper Awsum error here
@@ -473,7 +473,7 @@ module Awsum
         'PublicIp' => public_ip
       }
 
-      response = send_request(params)
+      response = send_query_request(params)
       response.is_a?(Net::HTTPSuccess)
     end
     
@@ -485,7 +485,7 @@ module Awsum
       }
       params.merge!(array_to_params(key_names, 'KeyName'))
 
-      response = send_request(params)
+      response = send_query_request(params)
       parser = Awsum::Ec2::KeyPairParser.new(self)
       parser.parse(response.body)
     end
@@ -503,7 +503,7 @@ module Awsum
         'KeyName' => key_name
       }
 
-      response = send_request(params)
+      response = send_query_request(params)
       parser = Awsum::Ec2::KeyPairParser.new(self)
       parser.parse(response.body)[0]
     end
@@ -516,7 +516,7 @@ module Awsum
         'KeyName' => key_name
       }
 
-      response = send_request(params)
+      response = send_query_request(params)
       response.is_a?(Net::HTTPSuccess)
     end
     
@@ -528,7 +528,7 @@ module Awsum
       }
       params.merge!(array_to_params(group_names, 'GroupName'))
 
-      response = send_request(params)
+      response = send_query_request(params)
       parser = Awsum::Ec2::SecurityGroupParser.new(self)
       parser.parse(response.body)
     end
@@ -547,7 +547,7 @@ module Awsum
         'GroupDescription' => description
       }
 
-      response = send_request(params)
+      response = send_query_request(params)
       response.is_a?(Net::HTTPSuccess)
     end
     
@@ -559,7 +559,7 @@ module Awsum
         'GroupName' => group_name
       }
 
-      response = send_request(params)
+      response = send_query_request(params)
       response.is_a?(Net::HTTPSuccess)
     end
 
@@ -599,7 +599,7 @@ module Awsum
       params['ToPort'] = options[:to_port] unless options[:to_port].nil?
       params['CidrIp'] = options[:cidr_ip] unless options[:cidr_ip].nil?
 
-      response = send_request(params)
+      response = send_query_request(params)
       response.is_a?(Net::HTTPSuccess)
     end
 
@@ -639,7 +639,7 @@ module Awsum
       params['ToPort'] = options[:to_port] unless options[:to_port].nil?
       params['CidrIp'] = options[:cidr_ip] unless options[:cidr_ip].nil?
 
-      response = send_request(params)
+      response = send_query_request(params)
       response.is_a?(Net::HTTPSuccess)
     end
 

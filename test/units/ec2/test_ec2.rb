@@ -10,7 +10,7 @@ class ImagesTest < Test::Unit::TestCase
       setup {
         xml = load_fixture('ec2/images')
         response = stub('Http Response', :body => xml)
-        @ec2.expects(:send_request).returns(response)
+        @ec2.expects(:send_query_request).returns(response)
 
         @result = @ec2.images
       }
@@ -25,7 +25,7 @@ class ImagesTest < Test::Unit::TestCase
       setup {
         xml = load_fixture('ec2/images')
         response = stub('Http Response', :body => xml)
-        @ec2.expects(:send_request).returns(response)
+        @ec2.expects(:send_query_request).returns(response)
 
         @result = @ec2.my_images
       }
@@ -40,7 +40,7 @@ class ImagesTest < Test::Unit::TestCase
       setup {
         xml = load_fixture('ec2/image')
         response = stub('Http Response', :body => xml)
-        @ec2.expects(:send_request).returns(response)
+        @ec2.expects(:send_query_request).returns(response)
 
         @result = @ec2.image('ari-f9c22690')
       }
@@ -54,7 +54,7 @@ class ImagesTest < Test::Unit::TestCase
       setup {
         xml = load_fixture('ec2/image')
         response = stub('Http Response', :body => xml)
-        @ec2.expects(:send_request).returns(response)
+        @ec2.expects(:send_query_request).returns(response)
 
         @image = @ec2.image 'ari-f9c22690'
       }
@@ -62,7 +62,7 @@ class ImagesTest < Test::Unit::TestCase
       should "be able to create an instance" do
         xml = load_fixture('ec2/instance')
         response = stub('Http Response', :body => xml)
-        @ec2.expects(:send_request).returns(response)
+        @ec2.expects(:send_query_request).returns(response)
 
         instances = @image.run
         assert_equal Awsum::Ec2::Instance, instances[0].class
@@ -73,7 +73,7 @@ class ImagesTest < Test::Unit::TestCase
       setup {
         xml = load_fixture('ec2/register_image')
         response = stub('Http Response', :body => xml)
-        @ec2.expects(:send_request).returns(response)
+        @ec2.expects(:send_query_request).returns(response)
 
         @image_id = @ec2.register_image('s3.bucket.location')
       }
@@ -87,7 +87,7 @@ class ImagesTest < Test::Unit::TestCase
       setup {
         xml = load_fixture('ec2/deregister_image')
         response = stub('Http Response', :body => xml)
-        @ec2.expects(:send_request).returns(response)
+        @ec2.expects(:send_query_request).returns(response)
         response.expects(:is_a?).returns(true)
       }
 
@@ -100,7 +100,7 @@ class ImagesTest < Test::Unit::TestCase
       setup {
         xml = load_fixture('ec2/image')
         response = stub('Http Response', :body => xml)
-        @ec2.expects(:send_request).returns(response)
+        @ec2.expects(:send_query_request).returns(response)
 
         @image = @ec2.image('ami-ABCDEF')
       }
@@ -108,7 +108,7 @@ class ImagesTest < Test::Unit::TestCase
       should "be able to deregister itself" do
         xml = load_fixture('ec2/deregister_image')
         response = stub('Http Response', :body => xml)
-        @ec2.expects(:send_request).returns(response)
+        @ec2.expects(:send_query_request).returns(response)
         response.expects(:is_a?).returns(true)
 
         assert @image.deregister
@@ -118,12 +118,12 @@ class ImagesTest < Test::Unit::TestCase
         requests = sequence('requests')
         xml = load_fixture('ec2/deregister_image')
         response = stub('Http Response', :body => xml)
-        @ec2.expects(:send_request).returns(response).in_sequence(requests)
+        @ec2.expects(:send_query_request).returns(response).in_sequence(requests)
         response.expects(:is_a?).returns(true).in_sequence(requests)
 
         xml = load_fixture('ec2/register_image')
         response = stub('Http Response', :body => xml)
-        @ec2.expects(:send_request).returns(response).in_sequence(requests)
+        @ec2.expects(:send_query_request).returns(response).in_sequence(requests)
 
         assert @image.reregister
       end
@@ -151,7 +151,7 @@ class ImagesTest < Test::Unit::TestCase
       setup {
         xml = load_fixture('ec2/run_instances')
         response = stub('Http Response', :body => xml)
-        @ec2.expects(:send_request).returns(response)
+        @ec2.expects(:send_query_request).returns(response)
 
         @result = @ec2.run_instances 'ari-f9c22690'
       }
@@ -166,7 +166,7 @@ class ImagesTest < Test::Unit::TestCase
       setup {
         xml = load_fixture('ec2/instances')
         response = stub('Http Response', :body => xml)
-        @ec2.expects(:send_request).returns(response)
+        @ec2.expects(:send_query_request).returns(response)
 
         @result = @ec2.instances
       }
@@ -181,7 +181,7 @@ class ImagesTest < Test::Unit::TestCase
       setup {
         xml = load_fixture('ec2/instance')
         response = stub('Http Response', :body => xml)
-        @ec2.expects(:send_request).returns(response)
+        @ec2.expects(:send_query_request).returns(response)
 
         @result = @ec2.instance 'i-3f1cc856'
       }
@@ -196,7 +196,7 @@ class ImagesTest < Test::Unit::TestCase
         xml = load_fixture('ec2/terminate_instances')
         response = stub('Http Response', :body => xml)
         response.expects(:is_a?).returns(true)
-        @ec2.expects(:send_request).returns(response)
+        @ec2.expects(:send_query_request).returns(response)
 
         @result = @ec2.terminate_instances 'i-3f1cc856'
       }
@@ -210,7 +210,7 @@ class ImagesTest < Test::Unit::TestCase
       setup {
         xml = load_fixture('ec2/instance')
         response = stub('Http Response', :body => xml)
-        @ec2.expects(:send_request).returns(response)
+        @ec2.expects(:send_query_request).returns(response)
 
         @instance = @ec2.instance 'i-3f1cc856'
       }
@@ -219,7 +219,7 @@ class ImagesTest < Test::Unit::TestCase
         xml = load_fixture('ec2/terminate_instances')
         response = stub('Http Response', :body => xml)
         response.expects(:is_a?).returns(true)
-        @ec2.expects(:send_request).returns(response)
+        @ec2.expects(:send_query_request).returns(response)
 
         assert @instance.terminate
       end
@@ -227,7 +227,7 @@ class ImagesTest < Test::Unit::TestCase
       should "be able to list it's volumes" do
         xml = load_fixture('ec2/volumes')
         response = stub('Http Response', :body => xml)
-        @ec2.expects(:send_request).returns(response)
+        @ec2.expects(:send_query_request).returns(response)
 
         assert @instance.volumes.is_a?(Array)
       end
@@ -235,14 +235,14 @@ class ImagesTest < Test::Unit::TestCase
       should "be able to attach a volumes" do
         xml = load_fixture('ec2/volumes')
         response = stub('Http Response', :body => xml)
-        @ec2.expects(:send_request).returns(response)
+        @ec2.expects(:send_query_request).returns(response)
 
         volume = @ec2.volumes[0]
 
         xml = load_fixture('ec2/attach_volume')
         response = stub('Http Response', :body => xml)
         response.expects(:is_a?).returns(true)
-        @ec2.expects(:send_request).returns(response)
+        @ec2.expects(:send_query_request).returns(response)
 
         assert @instance.attach(volume)
       end
@@ -252,15 +252,15 @@ class ImagesTest < Test::Unit::TestCase
 
         xml = load_fixture('ec2/create_volume')
         response = stub('Http Response', :body => xml)
-        @ec2.expects(:send_request).returns(response).in_sequence(requests)
+        @ec2.expects(:send_query_request).returns(response).in_sequence(requests)
 
         xml = load_fixture('ec2/available_volume')
         response = stub('Http Response', :body => xml)
-        @ec2.expects(:send_request).returns(response).in_sequence(requests)
+        @ec2.expects(:send_query_request).returns(response).in_sequence(requests)
 
         xml = load_fixture('ec2/attach_volume')
         response = stub('Http Response', :body => xml)
-        @ec2.expects(:send_request).returns(response).in_sequence(requests)
+        @ec2.expects(:send_query_request).returns(response).in_sequence(requests)
 
         volume = @instance.create_volume(10)
         assert_equal Awsum::Ec2::Volume, volume.class
@@ -271,7 +271,7 @@ class ImagesTest < Test::Unit::TestCase
       should "be able to obtain an Instance representing the currently running machine" do
         xml = load_fixture('ec2/instance')
         response = stub('Http Response', :body => xml)
-        @ec2.expects(:send_request).returns(response)
+        @ec2.expects(:send_query_request).returns(response)
 
         io = mock('OpenURI', :read => 'i-3f1cc856')
         @ec2.expects(:open).returns(io)
@@ -309,7 +309,7 @@ class ImagesTest < Test::Unit::TestCase
       setup {
         xml = load_fixture('ec2/create_volume')
         response = stub('Http Response', :body => xml)
-        @ec2.expects(:send_request).returns(response)
+        @ec2.expects(:send_query_request).returns(response)
 
         @result = @ec2.create_volume 'us-east-1b', :size => 10
       }
@@ -323,7 +323,7 @@ class ImagesTest < Test::Unit::TestCase
       setup {
         xml = load_fixture('ec2/volumes')
         response = stub('Http Response', :body => xml)
-        @ec2.expects(:send_request).returns(response)
+        @ec2.expects(:send_query_request).returns(response)
 
         @result = @ec2.volumes
       }
@@ -339,7 +339,7 @@ class ImagesTest < Test::Unit::TestCase
         xml = load_fixture('ec2/attach_volume')
         response = stub('Http Response', :body => xml)
         response.expects(:is_a?).returns(true)
-        @ec2.expects(:send_request).returns(response)
+        @ec2.expects(:send_query_request).returns(response)
 
         @result = @ec2.attach_volume 'vol-44d6322d', 'i-3f1cc856', '/dev/sdb'
       }
@@ -354,7 +354,7 @@ class ImagesTest < Test::Unit::TestCase
         xml = load_fixture('ec2/detach_volume')
         response = stub('Http Response', :body => xml)
         response.expects(:is_a?).returns(true)
-        @ec2.expects(:send_request).returns(response)
+        @ec2.expects(:send_query_request).returns(response)
 
         @result = @ec2.detach_volume 'vol-44d6322d'
       }
@@ -369,7 +369,7 @@ class ImagesTest < Test::Unit::TestCase
         xml = load_fixture('ec2/delete_volume')
         response = stub('Http Response', :body => xml)
         response.expects(:is_a?).returns(true)
-        @ec2.expects(:send_request).returns(response)
+        @ec2.expects(:send_query_request).returns(response)
 
         @result = @ec2.delete_volume 'vol-44d6322d'
       }
@@ -383,7 +383,7 @@ class ImagesTest < Test::Unit::TestCase
       setup {
         xml = load_fixture('ec2/volumes')
         response = stub('Http Response', :body => xml)
-        @ec2.expects(:send_request).returns(response)
+        @ec2.expects(:send_query_request).returns(response)
 
         @volume = @ec2.volume 'vol-44d6322d'
       }
@@ -392,7 +392,7 @@ class ImagesTest < Test::Unit::TestCase
         xml = load_fixture('ec2/detach_volume')
         response = stub('Http Response', :body => xml)
         response.expects(:is_a?).returns(true)
-        @ec2.expects(:send_request).returns(response)
+        @ec2.expects(:send_query_request).returns(response)
 
         assert @volume.detach
       end
@@ -401,7 +401,7 @@ class ImagesTest < Test::Unit::TestCase
         xml = load_fixture('ec2/delete_volume')
         response = stub('Http Response', :body => xml)
         response.expects(:is_a?).returns(true)
-        @ec2.expects(:send_request).returns(response)
+        @ec2.expects(:send_query_request).returns(response)
 
         assert @volume.delete
       end
@@ -409,7 +409,7 @@ class ImagesTest < Test::Unit::TestCase
       should "be able to create a snapshot" do
         xml = load_fixture('ec2/create_snapshot')
         response = stub('Http Response', :body => xml)
-        @ec2.expects(:send_request).returns(response)
+        @ec2.expects(:send_query_request).returns(response)
 
         assert @volume.create_snapshot
       end
@@ -417,7 +417,7 @@ class ImagesTest < Test::Unit::TestCase
       should "be able to list it's snapshots" do
         xml = load_fixture('ec2/snapshots')
         response = stub('Http Response', :body => xml)
-        @ec2.expects(:send_request).returns(response)
+        @ec2.expects(:send_query_request).returns(response)
 
         assert @volume.snapshots.is_a?(Array)
       end
@@ -429,7 +429,7 @@ class ImagesTest < Test::Unit::TestCase
       setup {
         xml = load_fixture('ec2/create_snapshot')
         response = stub('Http Response', :body => xml)
-        @ec2.expects(:send_request).returns(response)
+        @ec2.expects(:send_query_request).returns(response)
 
         @result = @ec2.create_snapshot 'vol-79d13510'
       }
@@ -443,7 +443,7 @@ class ImagesTest < Test::Unit::TestCase
       setup {
         xml = load_fixture('ec2/snapshots')
         response = stub('Http Response', :body => xml)
-        @ec2.expects(:send_request).returns(response)
+        @ec2.expects(:send_query_request).returns(response)
 
         @result = @ec2.snapshots
       }
@@ -459,7 +459,7 @@ class ImagesTest < Test::Unit::TestCase
         xml = load_fixture('ec2/delete_snapshot')
         response = stub('Http Response', :body => xml)
         response.expects(:is_a?).returns(true)
-        @ec2.expects(:send_request).returns(response)
+        @ec2.expects(:send_query_request).returns(response)
 
         @result = @ec2.delete_snapshot 'snap-747c911d'
       }
@@ -473,7 +473,7 @@ class ImagesTest < Test::Unit::TestCase
       setup {
         xml = load_fixture('ec2/snapshots')
         response = stub('Http Response', :body => xml)
-        @ec2.expects(:send_request).returns(response)
+        @ec2.expects(:send_query_request).returns(response)
 
         @snapshot = @ec2.snapshot 'snap-747c911d'
       }
@@ -482,7 +482,7 @@ class ImagesTest < Test::Unit::TestCase
         xml = load_fixture('ec2/delete_snapshot')
         response = stub('Http Response', :body => xml)
         response.expects(:is_a?).returns(true)
-        @ec2.expects(:send_request).returns(response)
+        @ec2.expects(:send_query_request).returns(response)
 
         assert @snapshot.delete
       end
@@ -494,7 +494,7 @@ class ImagesTest < Test::Unit::TestCase
       setup {
         xml = load_fixture('ec2/availability_zones')
         response = stub('Http Response', :body => xml)
-        @ec2.expects(:send_request).returns(response)
+        @ec2.expects(:send_query_request).returns(response)
 
         @result = @ec2.availability_zones
       }
@@ -511,7 +511,7 @@ class ImagesTest < Test::Unit::TestCase
       setup {
         xml = load_fixture('ec2/regions')
         response = stub('Http Response', :body => xml)
-        @ec2.expects(:send_request).returns(response)
+        @ec2.expects(:send_query_request).returns(response)
 
         @result = @ec2.regions
       }
@@ -526,7 +526,7 @@ class ImagesTest < Test::Unit::TestCase
       setup {
         xml = load_fixture('ec2/regions')
         response = stub('Http Response', :body => xml)
-        @ec2.expects(:send_request).returns(response)
+        @ec2.expects(:send_query_request).returns(response)
 
         @region = @ec2.region 'us-east-1'
       }
@@ -534,7 +534,7 @@ class ImagesTest < Test::Unit::TestCase
       should "be able to list availability zones" do
         xml = load_fixture('ec2/availability_zones')
         response = stub('Http Response', :body => xml)
-        @ec2.expects(:send_request).returns(response)
+        @ec2.expects(:send_query_request).returns(response)
 
         assert @region.availability_zones.is_a?(Array)
       end
@@ -542,7 +542,7 @@ class ImagesTest < Test::Unit::TestCase
       should "work in block mode" do
         xml = load_fixture('ec2/availability_zones')
         response = stub('Http Response', :body => xml)
-        @ec2.expects(:send_request).returns(response)
+        @ec2.expects(:send_query_request).returns(response)
 
         azones = nil
         @region.use do
@@ -565,7 +565,7 @@ class ImagesTest < Test::Unit::TestCase
       setup {
         xml = load_fixture('ec2/addresses')
         response = stub('Http Response', :body => xml)
-        @ec2.expects(:send_request).returns(response)
+        @ec2.expects(:send_query_request).returns(response)
 
         @result = @ec2.addresses
       }
@@ -580,7 +580,7 @@ class ImagesTest < Test::Unit::TestCase
       setup {
         xml = load_fixture('ec2/allocate_address')
         response = stub('Http Response', :body => xml)
-        @ec2.expects(:send_request).returns(response)
+        @ec2.expects(:send_query_request).returns(response)
         
         @result = @ec2.allocate_address
       }
@@ -595,7 +595,7 @@ class ImagesTest < Test::Unit::TestCase
         xml = load_fixture('ec2/associate_address')
         response = stub('Http Response', :body => xml)
         response.expects(:is_a?).returns(true)
-        @ec2.expects(:send_request).returns(response)
+        @ec2.expects(:send_query_request).returns(response)
       }
 
       should "succeed" do
@@ -608,7 +608,7 @@ class ImagesTest < Test::Unit::TestCase
         xml = load_fixture('ec2/disassociate_address')
         response = stub('Http Response', :body => xml)
         response.expects(:is_a?).returns(true)
-        @ec2.expects(:send_request).returns(response)
+        @ec2.expects(:send_query_request).returns(response)
       }
 
       should "succeed" do
@@ -622,12 +622,12 @@ class ImagesTest < Test::Unit::TestCase
         
         xml = load_fixture('ec2/unassociated_address')
         response = stub('Http Response', :body => xml)
-        @ec2.expects(:send_request).returns(response).in_sequence(requests)
+        @ec2.expects(:send_query_request).returns(response).in_sequence(requests)
 
         xml = load_fixture('ec2/release_address')
         response = stub('Http Response', :body => xml)
         response.expects(:is_a?).returns(true)
-        @ec2.expects(:send_request).returns(response).in_sequence(requests)
+        @ec2.expects(:send_query_request).returns(response).in_sequence(requests)
       }
 
       should "succeed" do
@@ -639,7 +639,7 @@ class ImagesTest < Test::Unit::TestCase
       setup {
         xml = load_fixture('ec2/addresses')
         response = stub('Http Response', :body => xml)
-        @ec2.expects(:send_request).returns(response)
+        @ec2.expects(:send_query_request).returns(response)
       }
 
       should "raise an error" do
@@ -654,7 +654,7 @@ class ImagesTest < Test::Unit::TestCase
         xml = load_fixture('ec2/release_address')
         response = stub('Http Response', :body => xml)
         response.expects(:is_a?).returns(true)
-        @ec2.expects(:send_request).returns(response)
+        @ec2.expects(:send_query_request).returns(response)
       }
 
       should "succeed" do
@@ -666,7 +666,7 @@ class ImagesTest < Test::Unit::TestCase
       setup {
         xml = load_fixture('ec2/unassociated_address')
         @response = stub('Http Response', :body => xml)
-        @ec2.expects(:send_request).returns(@response)
+        @ec2.expects(:send_query_request).returns(@response)
 
         @address = @ec2.address('127.0.0.1')
       }
@@ -674,7 +674,7 @@ class ImagesTest < Test::Unit::TestCase
       should "be able to associate with an instance" do
         xml = load_fixture('ec2/associate_address')
         response = stub('Http Response', :body => xml)
-        @ec2.expects(:send_request).returns(response)
+        @ec2.expects(:send_query_request).returns(response)
         response.expects(:is_a?).returns(true)
 
         assert @address.associate('i-123456')
@@ -691,11 +691,11 @@ class ImagesTest < Test::Unit::TestCase
 
         xml = load_fixture('ec2/unassociated_address')
         response = stub('Http Response', :body => xml)
-        @ec2.expects(:send_request).returns(response).in_sequence(requests)
+        @ec2.expects(:send_query_request).returns(response).in_sequence(requests)
 
         xml = load_fixture('ec2/release_address')
         response = stub('Http Response', :body => xml)
-        @ec2.expects(:send_request).returns(response).in_sequence(requests)
+        @ec2.expects(:send_query_request).returns(response).in_sequence(requests)
         response.expects(:is_a?).returns(true).in_sequence(requests)
 
         assert @address.release
@@ -706,7 +706,7 @@ class ImagesTest < Test::Unit::TestCase
       setup {
         xml = load_fixture('ec2/addresses')
         response = stub('Http Response', :body => xml)
-        @ec2.expects(:send_request).returns(response)
+        @ec2.expects(:send_query_request).returns(response)
 
         @address = @ec2.address('127.0.0.1')
       }
@@ -714,7 +714,7 @@ class ImagesTest < Test::Unit::TestCase
       should "return the instance it's associated with" do
         xml = load_fixture('ec2/instances')
         response = stub('Http Response', :body => xml)
-        @ec2.expects(:send_request).returns(response)
+        @ec2.expects(:send_query_request).returns(response)
 
         assert_equal Awsum::Ec2::Instance, @address.instance.class
       end
@@ -728,7 +728,7 @@ class ImagesTest < Test::Unit::TestCase
       should "be able to disassociate from an instance" do
         xml = load_fixture('ec2/disassociate_address')
         response = stub('Http Response', :body => xml)
-        @ec2.expects(:send_request).returns(response)
+        @ec2.expects(:send_query_request).returns(response)
         response.expects(:is_a?).returns(true)
 
         assert @address.disassociate
@@ -743,7 +743,7 @@ class ImagesTest < Test::Unit::TestCase
       should "be able to release when forced" do
         xml = load_fixture('ec2/release_address')
         response = stub('Http Response', :body => xml)
-        @ec2.expects(:send_request).returns(response)
+        @ec2.expects(:send_query_request).returns(response)
         response.expects(:is_a?).returns(true)
 
         assert @address.release!
@@ -756,7 +756,7 @@ class ImagesTest < Test::Unit::TestCase
       setup {
         xml = load_fixture('ec2/key_pairs')
         response = stub('Http Response', :body => xml)
-        @ec2.expects(:send_request).returns(response)
+        @ec2.expects(:send_query_request).returns(response)
 
         @result = @ec2.key_pairs
       }
@@ -771,7 +771,7 @@ class ImagesTest < Test::Unit::TestCase
       setup {
         xml = load_fixture('ec2/key_pairs')
         response = stub('Http Response', :body => xml)
-        @ec2.expects(:send_request).returns(response)
+        @ec2.expects(:send_query_request).returns(response)
 
         @result = @ec2.key_pair('gsg_keypair')
       }
@@ -785,7 +785,7 @@ class ImagesTest < Test::Unit::TestCase
       setup {
         xml = load_fixture('ec2/create_key_pair')
         response = stub('Http Response', :body => xml)
-        @ec2.expects(:send_request).returns(response)
+        @ec2.expects(:send_query_request).returns(response)
 
         @result = @ec2.create_key_pair('test-keypair')
       }
@@ -799,7 +799,7 @@ class ImagesTest < Test::Unit::TestCase
       setup {
         xml = load_fixture('ec2/create_key_pair')
         response = stub('Http Response', :body => xml)
-        @ec2.expects(:send_request).returns(response)
+        @ec2.expects(:send_query_request).returns(response)
         response.expects(:is_a?).returns(true)
       }
 
@@ -814,7 +814,7 @@ class ImagesTest < Test::Unit::TestCase
       setup {
         xml = load_fixture('ec2/security_groups')
         response = stub('Http Response', :body => xml)
-        @ec2.expects(:send_request).returns(response)
+        @ec2.expects(:send_query_request).returns(response)
 
         @result = @ec2.security_groups
       }
@@ -829,7 +829,7 @@ class ImagesTest < Test::Unit::TestCase
       setup {
         xml = load_fixture('ec2/security_groups')
         response = stub('Http Response', :body => xml)
-        @ec2.expects(:send_request).returns(response)
+        @ec2.expects(:send_query_request).returns(response)
 
         @result = @ec2.security_group('default')
       }
@@ -843,7 +843,7 @@ class ImagesTest < Test::Unit::TestCase
       setup {
         xml = load_fixture('ec2/create_security_group')
         response = stub('Http Response', :body => xml)
-        @ec2.expects(:send_request).returns(response)
+        @ec2.expects(:send_query_request).returns(response)
         response.expects(:is_a?).returns(true)
       }
 
@@ -856,7 +856,7 @@ class ImagesTest < Test::Unit::TestCase
       setup {
         xml = load_fixture('ec2/delete_security_group')
         response = stub('Http Response', :body => xml)
-        @ec2.expects(:send_request).returns(response)
+        @ec2.expects(:send_query_request).returns(response)
         response.expects(:is_a?).returns(true)
       }
 
@@ -869,7 +869,7 @@ class ImagesTest < Test::Unit::TestCase
       setup {
         xml = load_fixture('ec2/authorize_owner_group_access')
         response = stub('Http Response', :body => xml)
-        @ec2.expects(:send_request).returns(response)
+        @ec2.expects(:send_query_request).returns(response)
         response.expects(:is_a?).returns(true)
       }
 
@@ -882,7 +882,7 @@ class ImagesTest < Test::Unit::TestCase
       setup {
         xml = load_fixture('ec2/authorize_ip_access')
         response = stub('Http Response', :body => xml)
-        @ec2.expects(:send_request).returns(response)
+        @ec2.expects(:send_query_request).returns(response)
         response.expects(:is_a?).returns(true)
       }
 
@@ -927,7 +927,7 @@ class ImagesTest < Test::Unit::TestCase
       setup {
         xml = load_fixture('ec2/revoke_ip_access')
         response = stub('Http Response', :body => xml)
-        @ec2.expects(:send_request).returns(response)
+        @ec2.expects(:send_query_request).returns(response)
         response.expects(:is_a?).returns(true)
       }
 
@@ -972,7 +972,7 @@ class ImagesTest < Test::Unit::TestCase
       setup {
         xml = load_fixture('ec2/security_groups')
         response = stub('Http Response', :body => xml)
-        @ec2.expects(:send_request).returns(response)
+        @ec2.expects(:send_query_request).returns(response)
 
         @security_group = @ec2.security_group('default')
       }
@@ -980,7 +980,7 @@ class ImagesTest < Test::Unit::TestCase
       should "be able to authorize a group" do
         xml = load_fixture('ec2/authorize_owner_group_access')
         response = stub('Http Response', :body => xml)
-        @ec2.expects(:send_request).returns(response)
+        @ec2.expects(:send_query_request).returns(response)
         response.expects(:is_a?).returns(true)
 
         assert @security_group.authorize_group('test', '111111111111')
@@ -989,7 +989,7 @@ class ImagesTest < Test::Unit::TestCase
       should "be able to revoke a group" do
         xml = load_fixture('ec2/revoke_owner_group_access')
         response = stub('Http Response', :body => xml)
-        @ec2.expects(:send_request).returns(response)
+        @ec2.expects(:send_query_request).returns(response)
         response.expects(:is_a?).returns(true)
 
         assert @security_group.revoke_group('test', '111111111111')
@@ -998,7 +998,7 @@ class ImagesTest < Test::Unit::TestCase
       should "be able to authorize an ip" do
         xml = load_fixture('ec2/authorize_ip_access')
         response = stub('Http Response', :body => xml)
-        @ec2.expects(:send_request).returns(response)
+        @ec2.expects(:send_query_request).returns(response)
         response.expects(:is_a?).returns(true)
 
         assert @security_group.authorize_ip(80, 80, 'tcp', '0.0.0.0/0')
@@ -1007,7 +1007,7 @@ class ImagesTest < Test::Unit::TestCase
       should "be able to revoke an ip" do
         xml = load_fixture('ec2/revoke_ip_access')
         response = stub('Http Response', :body => xml)
-        @ec2.expects(:send_request).returns(response)
+        @ec2.expects(:send_query_request).returns(response)
         response.expects(:is_a?).returns(true)
 
         assert @security_group.revoke_ip(80, 80, 'tcp', '0.0.0.0/0')
@@ -1016,7 +1016,7 @@ class ImagesTest < Test::Unit::TestCase
       should "be able to delete itself" do
         xml = load_fixture('ec2/delete_security_group')
         response = stub('Http Response', :body => xml)
-        @ec2.expects(:send_request).returns(response)
+        @ec2.expects(:send_query_request).returns(response)
         response.expects(:is_a?).returns(true)
 
         assert @security_group.delete
