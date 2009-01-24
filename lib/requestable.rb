@@ -1,9 +1,11 @@
-require 'net/https'
-require 'uri'
-require 'error'
-require 'cgi'
 require 'base64'
+require 'cgi'
+require 'digest/md5'
+require 'error'
+require 'net/https'
 require 'openssl'
+require 'time'
+require 'uri'
 
 module Awsum
   module Requestable #:nodoc:
@@ -33,27 +35,76 @@ module Awsum
       #Attach signature to query string
       params_string << "&Signature=#{CGI::escape(signature)}"
 
-      #TODO: Allow secure/non-secure
-      Net::HTTP.version_1_1
-      url = URI.parse("https://#{host}/?#{params_string}")
-      url.scheme = 'https'
-      url.port = 443
-
-      headers = {}
-      request = Net::HTTP::Get.new(url.path)
-
-      http = Net::HTTP.new(url.host, url.port)
-      http.use_ssl = true
-      http.verify_mode = OpenSSL::SSL::VERIFY_NONE
-
+      url = "https://#{host}/?#{params_string}"
+      response = process_request('GET', url)
       puts "URL: #{url}" if ENV['DEBUG']
-      response = http.send_request('GET', url.request_uri, nil, headers)
       puts "Response:\n#{response.code}\n#{response.body}" if ENV['DEBUG']
       if response.is_a?(Net::HTTPSuccess)
         response
       else
         raise Awsum::Error.new(response)
       end
+    end
+
+    # Sends a full request including headers and possible post data
+    #
+    # Used for S3 requests
+    def send_s3_request(method, bucket, key = '', parameters = {}, headers = {}, data = nil)
+      # Ensure required headers are in place
+      if !data.nil? && headers['Content-MD5'].nil?
+        headers['Content-MD5'] = Base64::encode64(Digest::MD5.digest(data))
+      end
+      headers['Date'] = Time.now.rfc822 if headers['Date'].nil?
+
+      signature_string = generate_rest_signature_string(method, bucket, key, parameters, headers)
+      #puts "signature_string: \n#{signature_string}\n\n"
+
+      signature = sign(signature_string)
+
+      headers['Authorization'] = "AWS #{@access_key}:#{signature}"
+
+      response = process_request(method, "https://#{bucket}#{bucket.blank? ? '' : '.'}#{host}#{key[0..0] == '/' ? '' : '/'}#{key}#{parameters.size == 0 ? '' : "?#{parameters.collect{|k,v| v.nil? ? k.to_s : "#{CGI::escape(k.to_s)}=#{CGI::escape(v.to_s)}"}.join('&')}"}", headers, data)
+
+      puts "URL: #{url}" if ENV['DEBUG']
+      puts "Response:\n#{response.code}\n#{response.body}" if ENV['DEBUG']
+      if response.is_a?(Net::HTTPSuccess)
+        response
+      else
+        raise Awsum::Error.new(response)
+      end
+    end
+
+    def generate_rest_signature_string(method, bucket, key, parameters, headers)
+      canonicalized_amz_headers = headers.sort{|a,b| a[0].to_s.downcase <=> b[0].to_s.downcase }.collect{|k, v| "#{k.to_s.downcase}:#{(v.is_a?(Array) ? v.join(',') : v).gsub(/\n/, ' ')}" if k =~ /\Ax-amz-/i }.compact.join("\n")
+      canonicalized_resource = "#{bucket.blank? ? '' : '/'}#{bucket}#{key[0..0] == '/' ? '' : '/'}#{key}"
+      ['acl', 'torrent', 'logging', 'location'].each do |sub_resource|
+        if parameters.has_key?(sub_resource)
+          canonicalized_resource << "?#{sub_resource}"
+          break
+        end
+      end
+
+      content_type = headers[headers.collect{|k,v| k if k =~ /\Acontent-type\z/i}.compact[0]]
+      content_md5  = headers[headers.collect{|k,v| k if k =~ /\Acontent-md5\z/i}.compact[0]]
+      amz_date     = headers[headers.collect{|k,v| k if k =~ /\Ax-amz-date\z/i}.compact[0]]
+
+      signature_string = "#{method}\n#{content_md5}\n#{content_type}\n#{amz_date.nil? ? headers['Date'] : ''}\n#{canonicalized_amz_headers}#{canonicalized_amz_headers.blank? ? '' : "\n"}#{canonicalized_resource}"
+    end
+
+    def process_request(method, url, headers = {}, data = nil)
+      #TODO: Allow secure/non-secure
+      Net::HTTP.version_1_1
+      uri = URI.parse(url)
+      uri.scheme = 'https'
+      uri.port = 443
+
+      request = Net::HTTP::Get.new(uri.path)
+
+      http = Net::HTTP.new(uri.host, uri.port)
+      http.use_ssl = true
+      http.verify_mode = OpenSSL::SSL::VERIFY_NONE
+
+      http.send_request(method, uri.request_uri, nil, headers)
     end
 
     # Converts an array of paramters into <param_name>.<num> format
