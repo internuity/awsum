@@ -10,9 +10,7 @@ class ErrorTest < Test::Unit::TestCase
       setup {
         xml = load_fixture('ec2/invalid_request_error')
         response = stub('Http Response', :body => xml, :code => 400)
-        http = mock('HTTP', :use_ssl= => nil, :verify_mode= => nil)
-        http.expects(:send_request).with{|method, uri, data, headers| @uri = uri}.returns(response)
-        Net::HTTP.expects(:new).returns(http)
+        @ec2.expects(:process_request).with{|method, uri| @uri = uri}.returns(response)
 
         begin
           @ec2.images
@@ -42,9 +40,7 @@ class ErrorTest < Test::Unit::TestCase
       setup {
         xml = load_fixture('ec2/invalid_request_error')
         response = stub('Http Response', :body => xml, :code => 400)
-        http = mock('HTTP', :use_ssl= => nil, :verify_mode= => nil)
-        http.expects(:send_request).with{|method, uri, data, headers| @uri = uri}.returns(response)
-        Net::HTTP.expects(:new).returns(http)
+        @ec2.expects(:process_request).with{|method, uri| @uri = uri}.returns(response)
       }
 
       should "raise an error" do

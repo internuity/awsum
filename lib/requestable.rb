@@ -99,18 +99,40 @@ module Awsum
 
     def process_request(method, url, headers = {}, data = nil)
       #TODO: Allow secure/non-secure
-      Net::HTTP.version_1_1
       uri = URI.parse(url)
       uri.scheme = 'https'
       uri.port = 443
 
-      request = Net::HTTP::Get.new(uri.path)
+      #puts uri.to_s
 
-      http = Net::HTTP.new(uri.host, uri.port)
-      http.use_ssl = true
-      http.verify_mode = OpenSSL::SSL::VERIFY_NONE
+      Net::HTTP.version_1_1
+      con = Net::HTTP.new(uri.host, uri.port)
+      con.use_ssl = true
+      con.verify_mode = OpenSSL::SSL::VERIFY_NONE
+      con.start do |http|
+        request = Net::HTTP::Get.new("#{uri.path}#{"?#{uri.query}" if uri.query}")
 
-      http.send_request(method, uri.request_uri, nil, headers)
+        response = http.request(request)
+
+        #puts response.inspect
+        #puts response.code
+        #response.each_header do |key,val|
+        #  puts "   #{key} = #{val}"
+        #end
+        #puts response.body
+        #puts
+
+        case response
+          when Net::HTTPSuccess
+            response
+          when Net::HTTPRedirection
+            new_uri = URI.parse(response['Location'])
+            uri.host = new_uri.host
+            uri.path = "#{new_uri.path}#{uri.path unless uri.path = '/'}"
+            response = process_request(method, uri.to_s, headers, data)
+        end
+        response
+      end
     end
 
     # Converts an array of paramters into <param_name>.<num> format

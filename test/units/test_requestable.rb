@@ -6,9 +6,7 @@ class RequestableTest < Test::Unit::TestCase
 
   context "Mock HTTP calls: " do
     setup {
-      @http = mock('HTTP', :use_ssl= => nil, :verify_mode= => nil)
       @response = mock('HTTP Response', :is_a? => true)
-      Net::HTTP.expects(:new).returns(@http)
     }
 
     context "A call to send_query_request" do
@@ -16,8 +14,8 @@ class RequestableTest < Test::Unit::TestCase
         @access_key = 'ABCDEF'
         @secret_key = '123456'
         @host = 'test.amazonaws.com'
-        @http.expects(:send_request).with{|method, uri, data, headers| 
-          uri == '/?AWSAccessKeyId=ABCDEF&Action=DescribeImages&ImageId.1=ami-1234567&SignatureMethod=HmacSHA256&SignatureVersion=2&Timestamp=2009-01-23T03%3A34%3A38.000Z&Version=2008-12-01&Signature=Da66foYzsBTzMoCgCMBaUJrr4ha3NpWEWZ%2BHxl5h5eg%3D'
+        self.expects(:process_request).with{|method, uri| 
+          uri == 'https://test.amazonaws.com/?AWSAccessKeyId=ABCDEF&Action=DescribeImages&ImageId.1=ami-1234567&SignatureMethod=HmacSHA256&SignatureVersion=2&Timestamp=2009-01-23T03%3A34%3A38.000Z&Version=2008-12-01&Signature=Da66foYzsBTzMoCgCMBaUJrr4ha3NpWEWZ%2BHxl5h5eg%3D'
         }.returns(@response)
 
         send_query_request({'Action' => 'DescribeImages', 'ImageId.1' => 'ami-1234567', 'Timestamp' => '2009-01-23T03:34:38.000Z'})
@@ -47,7 +45,7 @@ class RequestableTest < Test::Unit::TestCase
             'Date' => date
           }
 
-          @http.expects(:send_request).with{|method, uri, data, headers| 
+          self.expects(:process_request).with{|method, uri, headers, data| 
             headers['Authorization'] == 'AWS 0PN5J17HBGZHT7JJ3X82:xXjDGYUmKxnwqr5KXNPGldn5LbA='
           }.returns(@response)
 
@@ -71,7 +69,7 @@ class RequestableTest < Test::Unit::TestCase
             'Content-Length' => 94328
           }
 
-          @http.expects(:send_request).with{|method, uri, data, headers| 
+          self.expects(:process_request).with{|method, uri, headers, data| 
             headers['Authorization'] == 'AWS 0PN5J17HBGZHT7JJ3X82:hcicpDDvL9SsO6AkvxqmIWkmOuQ='
           }.returns(@response)
 
@@ -94,7 +92,7 @@ class RequestableTest < Test::Unit::TestCase
             'Date' => date
           }
 
-          @http.expects(:send_request).with{|method, uri, data, headers| 
+          self.expects(:process_request).with{|method, uri, headers, data| 
             headers['Authorization'] == 'AWS 0PN5J17HBGZHT7JJ3X82:thdUi9VAkzhkniLj96JIrOPGi0g='
           }.returns(@response)
 
@@ -119,7 +117,7 @@ class RequestableTest < Test::Unit::TestCase
             'x-amz-date' => 'Tue, 27 Mar 2007 21:20:26 +0000'
           }
 
-          @http.expects(:send_request).with{|method, uri, data, headers| 
+          self.expects(:process_request).with{|method, uri, headers, data| 
             headers['Authorization'] == 'AWS 0PN5J17HBGZHT7JJ3X82:k3nL7gH3+PadhTEVn5Ip83xlYzk='
           }.returns(@response)
 
@@ -152,7 +150,7 @@ class RequestableTest < Test::Unit::TestCase
             'Content-Length' => '5913339'
           }
 
-          @http.expects(:send_request).with{|method, uri, data, headers| 
+          self.expects(:process_request).with{|method, uri, headers, data| 
             headers['Authorization'] == 'AWS 0PN5J17HBGZHT7JJ3X82:C0FlOtU8Ylb9KDTpZqYkZPX91iI='
           }.returns(@response)
 
@@ -175,7 +173,7 @@ class RequestableTest < Test::Unit::TestCase
             'Date' => date
           }
 
-          @http.expects(:send_request).with{|method, uri, data, headers| 
+          self.expects(:process_request).with{|method, uri, headers, data| 
             headers['Authorization'] == 'AWS 0PN5J17HBGZHT7JJ3X82:Db+gepJSUbZKwpx1FR0DLtEYoZA='
           }.returns(@response)
 
@@ -198,7 +196,7 @@ class RequestableTest < Test::Unit::TestCase
             'Date' => date
           }
 
-          @http.expects(:send_request).with{|method, uri, data, headers| 
+          self.expects(:process_request).with{|method, uri, headers, data| 
             headers['Authorization'] == 'AWS 0PN5J17HBGZHT7JJ3X82:dxhSBHoI6eVSPcXJqEghlUzZMnY='
           }.returns(@response)
 
