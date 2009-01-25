@@ -2,10 +2,12 @@ require 'base64'
 require 'cgi'
 require 'digest/md5'
 require 'error'
-require 'net/https'
 require 'openssl'
 require 'time'
 require 'uri'
+
+require 'net/https'
+require 'net_fix'
 
 module Awsum
   module Requestable #:nodoc:
@@ -125,8 +127,8 @@ module Awsum
         case response
           when Net::HTTPSuccess
             response
-          when Net::HTTPRedirection
-            new_uri = URI.parse(response['Location'])
+          when Net::HTTPMovedPermanently, HTTPFound, HTTPTemporaryRedirect
+            new_uri = URI.parse(response['location'])
             uri.host = new_uri.host
             uri.path = "#{new_uri.path}#{uri.path unless uri.path = '/'}"
             response = process_request(method, uri.to_s, headers, data)
