@@ -49,7 +49,7 @@ module Awsum
 
     def create_bucket(bucket_name)
       raise ArgumentError.new('Bucket name cannot be in an ip address style') if bucket_name =~ /^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}/
-      raise ArgumentError.new('Bucket name can only have lowercase letters, numbers, periods (.), underscores (_) and dashes (-)') unless bucket_name =~ /^[a-z\d][-a-z\d._]+[a-z\d._]$/
+      raise ArgumentError.new('Bucket name can only have lowercase letters, numbers, periods (.), underscores (_) and dashes (-)') unless bucket_name =~ /^[\w\d][-a-z\d._]+[a-z\d._]$/
       raise ArgumentError.new('Bucket name cannot contain a dash (-) next to a period (.)') if bucket_name =~ /\.-|-\./
       raise ArgumentError.new('Bucket name must be between 3 and 63 characters') if bucket_name.size < 3 || bucket_name.size > 63
     end

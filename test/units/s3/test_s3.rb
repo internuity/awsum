@@ -13,12 +13,6 @@ class S3Test < Test::Unit::TestCase
         end
       end
 
-      should "not have uppercase letters" do
-        assert_raise ArgumentError do
-          @s3.create_bucket('BUCKET_NAME')
-        end
-      end
-
       should "not start with punctuation" do
         assert_raise ArgumentError do
           @s3.create_bucket('-name')

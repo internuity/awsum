@@ -91,6 +91,12 @@ module Awsum
       signature_string = "#{method}\n#{content_md5}\n#{content_type}\n#{amz_date.nil? ? headers['Date'] : ''}\n#{canonicalized_amz_headers}#{canonicalized_amz_headers.blank? ? '' : "\n"}#{canonicalized_resource}"
     end
 
+    def generate_s3_signed_request_url(method, bucket, key, expires = nil)
+      signature_string = generate_rest_signature_string(method, bucket, key, {}, {'Date' => expires})
+      signature = sign(signature_string)
+      "http://#{bucket}#{bucket.blank? ? '' : '.'}#{host}#{key[0..0] == '/' ? '' : '/'}#{key}?AWSAccessKeyId=#{@access_key}&Signature=#{CGI::escape(signature)}&Expires=#{expires}"
+    end
+
     def process_request(method, url, headers = {}, data = nil)
       #TODO: Allow secure/non-secure
       Net::HTTP.version_1_1
