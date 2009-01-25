@@ -50,18 +50,22 @@ module Awsum
     #
     # Used for S3 requests
     def send_s3_request(method, bucket, key = '', parameters = {}, headers = {}, data = nil)
+      new_headers = {}
+      headers.each { |k,v| new_headers[k.downcase] = v }
+      headers = new_headers
+
       # Ensure required headers are in place
-      if !data.nil? && headers['Content-MD5'].nil?
-        headers['Content-MD5'] = Base64::encode64(Digest::MD5.digest(data))
+      if !data.nil? && headers['content-md5'].nil?
+        headers['content-md5'] = Base64::encode64(Digest::MD5.digest(data))
       end
-      headers['Date'] = Time.now.rfc822 if headers['Date'].nil?
+      headers['date'] = Time.now.rfc822 if headers['date'].nil?
 
       signature_string = generate_rest_signature_string(method, bucket, key, parameters, headers)
       #puts "signature_string: \n#{signature_string}\n\n"
 
       signature = sign(signature_string)
 
-      headers['Authorization'] = "AWS #{@access_key}:#{signature}"
+      headers['authorization'] = "AWS #{@access_key}:#{signature}"
 
       response = process_request(method, "https://#{bucket}#{bucket.blank? ? '' : '.'}#{host}#{key[0..0] == '/' ? '' : '/'}#{key}#{parameters.size == 0 ? '' : "?#{parameters.collect{|k,v| v.nil? ? k.to_s : "#{CGI::escape(k.to_s)}=#{CGI::escape(v.to_s)}"}.join('&')}"}", headers, data)
 
@@ -84,15 +88,11 @@ module Awsum
         end
       end
 
-      content_type = headers[headers.collect{|k,v| k if k =~ /\Acontent-type\z/i}.compact[0]]
-      content_md5  = headers[headers.collect{|k,v| k if k =~ /\Acontent-md5\z/i}.compact[0]]
-      amz_date     = headers[headers.collect{|k,v| k if k =~ /\Ax-amz-date\z/i}.compact[0]]
-
-      signature_string = "#{method}\n#{content_md5}\n#{content_type}\n#{amz_date.nil? ? headers['Date'] : ''}\n#{canonicalized_amz_headers}#{canonicalized_amz_headers.blank? ? '' : "\n"}#{canonicalized_resource}"
+      signature_string = "#{method}\n#{headers['content-md5']}\n#{headers['content-type']}\n#{headers['x-amz-date'].nil? ? headers['date'] : ''}\n#{canonicalized_amz_headers}#{canonicalized_amz_headers.blank? ? '' : "\n"}#{canonicalized_resource}"
     end
 
     def generate_s3_signed_request_url(method, bucket, key, expires = nil)
-      signature_string = generate_rest_signature_string(method, bucket, key, {}, {'Date' => expires})
+      signature_string = generate_rest_signature_string(method, bucket, key, {}, {'date' => expires})
       signature = sign(signature_string)
       "http://#{bucket}#{bucket.blank? ? '' : '.'}#{host}#{key[0..0] == '/' ? '' : '/'}#{key}?AWSAccessKeyId=#{@access_key}&Signature=#{CGI::escape(signature)}&Expires=#{expires}"
     end

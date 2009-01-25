@@ -6,9 +6,10 @@
 # Licence:: MIT License (http://www.opensource.org/licenses/mit-license.php)
 #
 
-require 'support'
-require 'requestable'
 require 'parser'
+require 'requestable'
+require 'support'
+
 require 'ec2/ec2'
 require 's3/s3'
 
