@@ -27,7 +27,11 @@ module Awsum
       params = standard_options.merge(params)
 
       #Put parameters into query string format
-      params_string = params.delete_if{|k,v| v.nil?}.sort{|a,b| a[0].to_s <=> b[0].to_s}.collect{|key, val| "#{CGI::escape(key.to_s)}=#{CGI::escape(val.to_s)}"}.join('&')
+      params_string = params.delete_if{|k,v| v.nil?}.sort{|a,b| 
+        a[0].to_s <=> b[0].to_s
+      }.collect{|key, val| 
+        "#{CGI::escape(key.to_s)}=#{CGI::escape(val.to_s)}"
+      }.join('&')
       params_string.gsub!('+', '%20')
 
       #Create request signature
@@ -39,8 +43,6 @@ module Awsum
 
       url = "https://#{host}/?#{params_string}"
       response = process_request('GET', url)
-      puts "URL: #{url}" if ENV['DEBUG']
-      puts "Response:\n#{response.code}\n#{response.body}" if ENV['DEBUG']
       if response.is_a?(Net::HTTPSuccess)
         response
       else
@@ -51,28 +53,35 @@ module Awsum
     # Sends a full request including headers and possible post data
     #
     # Used for S3 requests
-    def send_s3_request(method, bucket, key = '', parameters = {}, headers = {}, data = nil)
-      new_headers = {}
-      headers.each { |k,v| new_headers[k.downcase] = v }
-      headers = new_headers
+    def send_s3_request(method = 'GET', options = {})
+      bucket = options[:bucket] || ''
+      key = options[:key] || ''
+      parameters = options[:parameters] || {}
+      data = options[:data]
+      headers = {}
+      (options[:headers] || {}).each { |k,v| headers[k.downcase] = v }
+
+      #Add the host header
+      host_name = "#{bucket}#{bucket.blank? ? '' : '.'}#{host}"
+      headers['host'] = host_name
 
       # Ensure required headers are in place
       if !data.nil? && headers['content-md5'].nil?
-        headers['content-md5'] = Base64::encode64(Digest::MD5.digest(data))
+        headers['content-md5'] = Base64::encode64(Digest::MD5.hexdigest(data)).gsub(/\n/, '')
       end
       headers['date'] = Time.now.rfc822 if headers['date'].nil?
 
       signature_string = generate_rest_signature_string(method, bucket, key, parameters, headers)
-      #puts "signature_string: \n#{signature_string}\n\n"
+      puts "signature_string: \n#{signature_string}\n\n" if ENV['DEBUG']
 
       signature = sign(signature_string)
 
       headers['authorization'] = "AWS #{@access_key}:#{signature}"
 
-      response = process_request(method, "https://#{bucket}#{bucket.blank? ? '' : '.'}#{host}#{key[0..0] == '/' ? '' : '/'}#{key}#{parameters.size == 0 ? '' : "?#{parameters.collect{|k,v| v.nil? ? k.to_s : "#{CGI::escape(k.to_s)}=#{CGI::escape(v.to_s)}"}.join('&')}"}", headers, data)
+      url = "https://#{host_name}#{key[0..0] == '/' ? '' : '/'}#{key}#{parameters.size == 0 ? '' : "?#{parameters.collect{|k,v| v.nil? ? k.to_s : "#{CGI::escape(k.to_s)}=#{CGI::escape(v.to_s)}"}.join('&')}"}"
 
-      puts "URL: #{url}" if ENV['DEBUG']
-      puts "Response:\n#{response.code}\n#{response.body}" if ENV['DEBUG']
+      response = process_request(method, url, headers, data)
+
       if response.is_a?(Net::HTTPSuccess)
         response
       else
@@ -112,22 +121,49 @@ module Awsum
       con.use_ssl = true
       con.verify_mode = OpenSSL::SSL::VERIFY_NONE
       con.start do |http|
-        request = Net::HTTP::Get.new("#{uri.path}#{"?#{uri.query}" if uri.query}")
+        case method.upcase
+          when 'GET'
+            request = Net::HTTP::Get.new("#{uri.path}#{"?#{uri.query}" if uri.query}")
+          when 'POST'
+            request = Net::HTTP::Post.new("#{uri.path}#{"?#{uri.query}" if uri.query}")
+          when 'PUT'
+            request = Net::HTTP::Put.new("#{uri.path}#{"?#{uri.query}" if uri.query}")
+          when 'DELETE'
+            request = Net::HTTP::Delete.new("#{uri.path}#{"?#{uri.query}" if uri.query}")
+          when 'HEAD'
+            request = Net::HTTP::Head.new("#{uri.path}#{"?#{uri.query}" if uri.query}")
+        end
+        request.initialize_http_header(headers)
+
+        if ENV['DEBUG']
+          puts "Request:"
+          puts request.inspect
+          request.each_capitalized do |key,val|
+            puts "#{key} = #{val}"
+          end
+          puts
+          puts request.body
+          puts
+        end
 
         response = http.request(request)
 
-        #puts response.inspect
-        #puts response.code
-        #response.each_header do |key,val|
-        #  puts "   #{key} = #{val}"
-        #end
-        #puts response.body
-        #puts
+        if ENV['DEBUG']
+          puts "Response"
+          puts response.inspect
+          puts response.code
+          response.each_capitalized do |key,val|
+            puts "#{key} = #{val}"
+          end
+          puts
+          puts response.body
+          puts
+        end
 
         case response
           when Net::HTTPSuccess
             response
-          when Net::HTTPMovedPermanently, HTTPFound, HTTPTemporaryRedirect
+          when Net::HTTPMovedPermanently, Net::HTTPFound, Net::HTTPTemporaryRedirect
             new_uri = URI.parse(response['location'])
             uri.host = new_uri.host
             uri.path = "#{new_uri.path}#{uri.path unless uri.path = '/'}"

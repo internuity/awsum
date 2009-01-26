@@ -40,6 +40,8 @@ class S3Test < Test::Unit::TestCase
       end
 
       should "be able to start with a number" do
+        @s3.expects(:send_s3_request)
+
         assert_nothing_raised do
           @s3.create_bucket('2name')
         end
@@ -55,6 +57,39 @@ class S3Test < Test::Unit::TestCase
         assert_raise ArgumentError do
           @s3.create_bucket((0..63).collect{'a'}.join)
         end
+      end
+
+      should "succeed" do
+        response = stub('Http Response', :is_a? => true)
+        @s3.expects(:send_s3_request).returns(response)
+
+        assert @s3.create_bucket('test')
+      end
+    end
+
+    context "retrieving a list of buckets" do
+      setup {
+        xml = load_fixture('s3/buckets')
+        response = stub('Http Response', :body => xml)
+        @s3.expects(:send_s3_request).returns(response)
+
+        @result = @s3.buckets
+      }
+
+      should "return an array of buckets" do
+        assert @result.is_a?(Array)
+        assert_equal Awsum::S3::Bucket, @result[0].class
+      end
+    end
+
+    context "deleting a bucket" do
+      setup {
+        response = stub('Http Response', :is_a? => true)
+        @s3.expects(:send_s3_request).returns(response)
+      }
+
+      should "succeed" do
+        assert @s3.delete_bucket('test')
       end
     end
   end

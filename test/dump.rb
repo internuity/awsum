@@ -10,6 +10,7 @@ require File.join(ROOT, 'lib', 'awsum.rb')
 # Usage ruby dump.rb -a <access key> -s <secret key> -c <command to call>
 #
 # Awsum::Ec2 is available as ec2
+# Awsum::S3 is available as s3
 #
 # Exampe
 # ruby dump.rb -a ABC -s XYZ -c "ec2.images"
@@ -32,4 +33,10 @@ end
 ENV['DEBUG'] = 'true'
 
 ec2 = Awsum::Ec2.new(access_key, secret_key)
-eval command
+s3 = Awsum::S3.new(access_key, secret_key)
+begin
+  result = eval(command)
+  puts result.inspect
+rescue Awsum::Error => e
+  puts "ERROR: #{e.inspect}"
+end
