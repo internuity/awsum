@@ -16,7 +16,7 @@ module Awsum
 
       # Delete this Bucket, recursively deleting all keys first
       def delete!
-        @s3.keys.each do |key|
+        @s3.keys(@name).each do |key|
           key.delete
         end
         delete

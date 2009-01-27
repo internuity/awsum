@@ -1,10 +1,11 @@
 module Awsum
   class S3
     class Key
-      attr_reader :name, :last_modified, :etag, :size, :owner, :storage_class
+      attr_reader :name, :bucket, :last_modified, :etag, :size, :owner, :storage_class
 
-      def initialize(s3, name, last_modified, etag, size, owner, storage_class)
+      def initialize(s3, bucket, name, last_modified, etag, size, owner, storage_class)
         @s3 = s3
+        @bucket = bucket
         @name = name
         @last_modified = last_modified
         @etag = etag
@@ -12,12 +13,18 @@ module Awsum
         @owner = owner
         @storage_class = storage_class
       end
+
+      # Delete this Key
+      def delete
+        @s3.delete_key(@bucket, @name)
+      end
     end
 
 #TODO: Create a more advanced array which can deal with pagination
     class KeyParser < Awsum::Parser #:nodoc:
       def initialize(s3)
         @s3 = s3
+        @bucket = ''
         @keys = []
         @text = nil
         @stack = []
@@ -27,6 +34,7 @@ module Awsum
         case tag
           when 'ListBucketResult'
             @stack << tag
+            @text = ''
           when 'Contents'
             @stack << tag
             @current = {}
@@ -43,9 +51,14 @@ module Awsum
 
       def tag_end(tag)
         case tag
+          when 'Name'
+            if @stack[-1] == 'ListBucketResult'
+              @bucket = @text.strip
+            end
           when 'Contents'
             @keys << Key.new(
                           @s3,
+                          @bucket,
                           @current['Key'],
                           Time.parse(@current['LastModified']),
                           @current['ETag'],

@@ -93,6 +93,32 @@ class S3Test < Test::Unit::TestCase
       end
     end
 
+    context "a bucket" do
+      setup {
+        @bucket = Awsum::S3::Bucket.new(@s3, 'test', Time.now)
+      }
+
+      should "be able to delete itself" do
+        response = stub('Http Response', :is_a? => true)
+        @s3.expects(:send_s3_request).returns(response)
+
+        assert @bucket.delete
+      end
+
+      should "be able to delete itself with keys" do
+        xml = load_fixture('s3/keys')
+        response = stub('Http Response', :is_a? => true, :body => xml)
+        requests = sequence('requests')
+        ['get keys', 'delete first key', 'delete second key', 'delete bucket'].each do |process_request|
+          @s3.expects(:send_s3_request).returns(response).in_sequence(requests)
+        end
+
+        assert @bucket.delete!
+      end
+    end
+  end
+
+  context "Keys: " do
     context "creating a key" do
       context "with a string" do
         setup {
@@ -123,6 +149,30 @@ class S3Test < Test::Unit::TestCase
         should "send data" do
           assert @s3.create_key('test', 'test.txt', @data)
         end
+      end
+    end
+
+    context "deleting a key" do
+      setup {
+        response = stub('Http Response', :is_a? => true)
+        @s3.expects(:send_s3_request).returns(response)
+      }
+
+      should "succeed" do
+        @s3.delete_key('test', 'test.txt')
+      end
+    end
+
+    context "a key" do
+      setup {
+        @key = Awsum::S3::Key.new(@s3, 'test', 'test.txt', Time.now, 'XXXXX', 234, 'AAAAAA', 'STANDARD')
+      }
+
+      should "be able to delete itself" do
+        response = stub('Http Response', :is_a? => true)
+        @s3.expects(:send_s3_request).returns(response)
+
+        assert @key.delete
       end
     end
   end

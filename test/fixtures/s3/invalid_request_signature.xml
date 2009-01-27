@@ -1,0 +1,5 @@
+<Error><Code>SignatureDoesNotMatch</Code><Message>The request signature we calculated does not match the signature you provided. Check your key and signing method.</Message><StringToSignBytes>50 55 54 0a 59 57 59 34 4d 47 4a 6c 4d 6d 55 32 5a 44 59 35 4e 32 59 79 4f 57 45 35 5a 44 67 31 59 6a 67 33 59 54 51 35 4f 54 6b 79 4d 44 55 3d 0a 61 70 70 6c 69 63 61 74 69 6f 6e 2f 78 2d 77 77 77 2d 66 6f 72 6d 2d 75 72 6c 65 6e 63 6f 64 65 64 0a 54 75 65 2c 20 32 37 20 4a 61 6e 20 32 30 30 39 20 30 35 3a 31 38 3a 30 36 20 2b 30 32 30 30 0a 2f 61 77 73 75 6d 2d 74 65 73 74 2d 62 75 63 6b 65 74 2f 74 65 73 74 31 2e 74 78 74</StringToSignBytes><RequestId>508F513C9D42C30E</RequestId><HostId>98di22wxhjhz0gCgNTHjJsH+Ywogv244W+sua24060WKPIjt2GGEhc0iYIsmMvVi</HostId><SignatureProvided>ryk9uqNKaI1wRaH7XLikD+pnwpM=</SignatureProvided><StringToSign>PUT
+YWY4MGJlMmU2ZDY5N2YyOWE5ZDg1Yjg3YTQ5OTkyMDU=
+application/x-www-form-urlencoded
+Tue, 27 Jan 2009 05:18:06 +0200
+/awsum-test-bucket/test1.txt</StringToSign><AWSAccessKeyId>1NJXGWMY8MX5G7SE7XG2</AWSAccessKeyId></Error>

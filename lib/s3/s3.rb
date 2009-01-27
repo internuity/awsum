@@ -123,6 +123,12 @@ module Awsum
       headers['x-amz-acl'] = acl.to_s.gsub(/_/, '-')
 
       response = send_s3_request('PUT', :bucket => bucket_name, :key => key_name, :headers => headers, :data => data)
+      response.is_a?(Net::HTTPSuccess)
+    end
+
+    def delete_key(bucket_name, key_name)
+      response = send_s3_request('DELETE', :bucket => bucket_name, :key => key_name)
+      response.is_a?(Net::HTTPSuccess)
     end
 
 #private
