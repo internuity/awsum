@@ -81,7 +81,7 @@ module Net
       req.set_body_internal body
       begin_transport req
         # Send only the headers if a 100-continue request
-        limit = :headers if ((req.is_a?(Post) || req.is_a?(Get)) && req['expect'] == '100-continue') ? :headers : nil
+        limit = ((req.is_a?(Post) || req.is_a?(Put)) && req['expect'] == '100-continue') ? :headers : nil
         req.exec @socket, @curr_http_version, edit_path(req.path), limit
         begin
           res = HTTPResponse.read_new(@socket)

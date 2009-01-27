@@ -8,6 +8,19 @@ module Awsum
         @name = name
         @creation_date = creation_date
       end
+
+      # Delete this Bucket
+      def delete
+        @s3.delete_bucket(@name)
+      end
+
+      # Delete this Bucket, recursively deleting all keys first
+      def delete!
+        @s3.keys.each do |key|
+          key.delete
+        end
+        delete
+      end
     end
 
     class BucketParser < Awsum::Parser #:nodoc:

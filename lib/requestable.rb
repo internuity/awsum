@@ -67,9 +67,28 @@ module Awsum
 
       # Ensure required headers are in place
       if !data.nil? && headers['content-md5'].nil?
-        headers['content-md5'] = Base64::encode64(Digest::MD5.hexdigest(data)).gsub(/\n/, '')
+        if data.respond_to?(:read)
+          if data.respond_to?(:rewind)
+            digest = Digest::MD5.new
+            while chunk = data.read(1024 * 1024)
+              digest << chunk
+            end
+            data.rewind
+
+            headers['content-md5'] = Base64::encode64(digest.digest).gsub(/\n/, '')
+          end
+        else
+          headers['content-md5'] = Base64::encode64(Digest::MD5.digest(data)).gsub(/\n/, '')
+        end
+      end
+      if !data.nil? && headers['content-length'].nil?
+        headers['content-length'] = (data.respond_to?(:lstat) ? data.lstat.size : data.size).to_s
       end
       headers['date'] = Time.now.rfc822 if headers['date'].nil?
+      headers['content-type'] ||= ''
+      if !data.nil?
+        headers['expect'] = '100-continue'
+      end
 
       signature_string = generate_rest_signature_string(method, bucket, key, parameters, headers)
       puts "signature_string: \n#{signature_string}\n\n" if ENV['DEBUG']
@@ -134,6 +153,14 @@ module Awsum
             request = Net::HTTP::Head.new("#{uri.path}#{"?#{uri.query}" if uri.query}")
         end
         request.initialize_http_header(headers)
+
+        unless data.nil?
+          if data.respond_to?(:read)
+            request.body_stream = data
+          else
+            request.body = data
+          end
+        end
 
         if ENV['DEBUG']
           puts "Request:"

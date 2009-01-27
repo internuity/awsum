@@ -106,6 +106,25 @@ module Awsum
       parser.parse(response.body)
     end
 
+    # Create a new Key in the specified Bucket
+    #
+    # ===Parameters
+    # * <tt>bucket_name</tt> - The name of the Bucket in which to store the Key
+    # * <tt>key_name</tt> - The name/path of the Key to store
+    # * <tt>data</tt> - The data to be stored in this Key
+    # * <tt>headers</tt> - Standard HTTP headers to be sent along
+    # * <tt>meta_headers</tt> - Meta headers to be stored along with the key
+    # * <tt>acl</tt> - A canned access policy, can be one of <tt>:private</tt>, <tt>:public_read</tt>, <tt>:public_read_write</tt> or <tt>:authenticated_read</tt>
+    def create_key(bucket_name, key_name, data, headers = {}, meta_headers = {}, acl = :private)
+      headers = headers.dup
+      meta_headers.each do |k,v|
+        headers[k =~ /^x-amz-meta-/i ? k : "x-amz-meta-#{k}"] = v
+      end
+      headers['x-amz-acl'] = acl.to_s.gsub(/_/, '-')
+
+      response = send_s3_request('PUT', :bucket => bucket_name, :key => key_name, :headers => headers, :data => data)
+    end
+
 #private
     #The host to make all requests against
     def host

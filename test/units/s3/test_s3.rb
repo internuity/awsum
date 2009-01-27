@@ -92,5 +92,38 @@ class S3Test < Test::Unit::TestCase
         assert @s3.delete_bucket('test')
       end
     end
+
+    context "creating a key" do
+      context "with a string" do
+        setup {
+          response = stub('Http Response', :is_a? => true)
+          @s3.expects(:send_s3_request).returns(response)
+        }
+
+        should "send data" do
+          assert @s3.create_key('test', 'test.txt', 'Some text')
+        end
+      end
+
+      context "with an IO object" do
+        setup {
+          response = stub('Http Response', :is_a? => true)
+          @s3.expects(:process_request).returns(response)
+
+          lstat = stub('lstat', :size => 100)
+          @data = stub('IO', :nil? => false)
+          @data.expects(:respond_to?).at_least_once.returns(true)
+          @data.expects(:lstat).returns(lstat)
+          read_sequence = sequence('read_sequence')
+          @data.expects(:read).returns((1..100).collect{|i| 'x'}.join('')).in_sequence(read_sequence)
+          @data.expects(:read).returns(nil).in_sequence(read_sequence)
+          @data.expects(:rewind).returns(0)
+        }
+
+        should "send data" do
+          assert @s3.create_key('test', 'test.txt', @data)
+        end
+      end
+    end
   end
 end
