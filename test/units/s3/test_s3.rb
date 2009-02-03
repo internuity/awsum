@@ -163,6 +163,63 @@ class S3Test < Test::Unit::TestCase
       end
     end
 
+    context "copying a key" do
+      context "to a different bucket with same name" do
+        setup {
+          response = stub('Http Response', :is_a? => true, :body => '')
+          @s3.expects(:send_s3_request).returns(response)
+        }
+
+        should "succeed" do
+          assert @s3.copy_key('test', 'test.txt', 'test2')
+        end
+      end
+
+      context "within the same bucket with a different name" do
+        setup {
+          response = stub('Http Response', :is_a? => true, :body => '')
+          @s3.expects(:send_s3_request).returns(response)
+        }
+
+        should "succeed" do
+          assert @s3.copy_key('test', 'test.txt', nil, 'test2.txt')
+        end
+      end
+
+      context "replacing headers and meta-data" do
+        setup {
+          response = stub('Http Response', :is_a? => true, :body => '')
+          @s3.expects(:send_s3_request).returns(response)
+        }
+
+        should "succeed" do
+          assert @s3.copy_key('test', 'test.txt', nil, nil, {'New-Header' => 'two'})
+        end
+      end
+
+      context "within the same bucket, with the same name and with no changed headers" do
+        should "raise an error" do
+          assert_raise ArgumentError do
+            @s3.copy_key('test', 'test.txt')
+          end
+        end
+      end
+
+      context "with a delayed error" do
+        setup {
+          xml = load_fixture('s3/copy_failure')
+          response = stub('Http Response', :is_a? => true, :code => 200, :body => xml)
+          @s3.expects(:send_s3_request).returns(response)
+        }
+
+        should "raise an error" do
+          assert_raise Awsum::Error do
+            @s3.copy_key('test', 'test.txt', 'test2')
+          end
+        end
+      end
+    end
+
     context "a key" do
       setup {
         @key = Awsum::S3::Key.new(@s3, 'test', 'test.txt', Time.now, 'XXXXX', 234, 'AAAAAA', 'STANDARD')

@@ -126,9 +126,48 @@ module Awsum
       response.is_a?(Net::HTTPSuccess)
     end
 
+    # Deletes a Key from a Bucket
     def delete_key(bucket_name, key_name)
       response = send_s3_request('DELETE', :bucket => bucket_name, :key => key_name)
       response.is_a?(Net::HTTPSuccess)
+    end
+
+    # Copy the contents of a Key to another key name or bucket
+    # 
+    # ===Parameters
+    # * <tt>source_bucket_name</tt> - The name of the Bucket from which to copy
+    # * <tt>source_key_name</tt> - The name of the Key from which to copy
+    # * <tt>destination_bucket_name</tt> - The name of the Bucket to which to copy (Can be nil if copying within the same bucket, or updating header data of existing Key)
+    # * <tt>destination_key_name</tt> - The name of the Key to which to copy (Can be nil if copying to a new bucket with same key name, or updating header data of existing Key)
+    # * <tt>headers</tt> - If not nil, the headers are replaced with this information
+    # * <tt>meta_headers</tt> - If not nil, the meta headers are replaced with this information
+    #
+    #--
+    # TODO: Need to handle copy-if-... headers
+    def copy_key(source_bucket_name, source_key_name, destination_bucket_name = nil, destination_key_name = nil, headers = nil, meta_headers = nil)
+      raise ArgumentError.new('You must include one of destination_bucket_name, destination_key_name or headers to be replaced') if destination_bucket_name.nil? && destination_key_name.nil? && headers.nil? && meta_headers.nil?
+
+      headers = {
+          'x-amz-copy-source' => "/#{source_bucket_name}/#{source_key_name}",
+          'x-amz-metadata-directive' => (((destination_bucket_name.nil? && destination_key_name.nil?) || !(headers.nil? || meta_headers.nil?)) ? 'REPLACE' : 'COPY')
+        }.merge(headers||{})
+      meta_headers.each do |k,v|
+        headers[k =~ /^x-amz-meta-/i ? k : "x-amz-meta-#{k}"] = v
+      end unless meta_headers.nil?
+
+      destination_bucket_name ||= source_bucket_name
+      destination_key_name ||= source_key_name
+
+      response = send_s3_request('PUT', :bucket => destination_bucket_name, :key => destination_key_name, :headers => headers, :data => nil)
+      if response.is_a?(Net::HTTPSuccess)
+        #Check for delayed error (See http://docs.amazonwebservices.com/AmazonS3/2006-03-01/RESTObjectCOPY.html#RESTObjectCOPY_Response)
+        response_body = response.body
+        if response_body =~ /<Error>/i
+          raise Awsum::Error.new(response)
+        else
+          true
+        end
+      end
     end
 
 #private
