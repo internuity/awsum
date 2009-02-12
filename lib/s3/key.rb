@@ -18,6 +18,30 @@ module Awsum
       def delete
         @s3.delete_key(@bucket, @name)
       end
+
+      # Make a copy of this key with a new name
+      def copy(new_name, headers = nil, meta_headers = nil)
+        @s3.copy_key(@bucket, @name, nil, new_name, headers, meta_headers)
+      end
+
+      # Rename or move this key to a new name
+      def rename(new_name, headers = nil, meta_headers = nil)
+        copied = @s3.copy_key(@bucket, @name, nil, new_name, headers, meta_headers)
+        @s3.delete_key(@bucket, @name) if copied
+      end
+      alias_method :move, :rename
+
+      # Copy this Key to another Bucket
+      #
+      def copy_to(new_bucket, new_name = nil, headers = nil, meta_headers = nil)
+        @s3.copy_key(@bucket, @name, new_bucket, new_name, headers, meta_headers)
+      end
+
+      # Move this Key to another Bucket
+      def move_to(new_bucket, new_name = nil, headers = nil, meta_headers = nil)
+        copied = @s3.copy_key(@bucket, @name, new_bucket, new_name, headers, meta_headers)
+        @s3.delete_key(@bucket, @name) if copied
+      end
     end
 
 #TODO: Create a more advanced array which can deal with pagination

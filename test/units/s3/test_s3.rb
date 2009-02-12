@@ -231,6 +231,41 @@ class S3Test < Test::Unit::TestCase
 
         assert @key.delete
       end
+
+      should "be able to copy itself to a different name" do
+        response = stub('Http Response', :is_a? => true, :body => '')
+        @s3.expects(:send_s3_request).returns(response)
+
+        assert @key.copy('test2.txt')
+      end
+
+      should "be able to rename itself" do
+        response = stub('Http Response', :is_a? => true, :body => '')
+        @s3.expects(:send_s3_request).returns(response).times(2)
+
+        assert @key.rename('test2.txt')
+      end
+
+      should "be able to move itself" do
+        response = stub('Http Response', :is_a? => true, :body => '')
+        @s3.expects(:send_s3_request).returns(response).times(2)
+
+        assert @key.move('test2.txt')
+      end
+
+      should "be able to copy itself to a new bucket" do
+        response = stub('Http Response', :is_a? => true, :body => '')
+        @s3.expects(:send_s3_request).returns(response)
+
+        assert @key.copy_to('another_bucket')
+      end
+
+      should "be able to move itself to a new bucket" do
+        response = stub('Http Response', :is_a? => true, :body => '')
+        @s3.expects(:send_s3_request).returns(response).times(2)
+
+        assert @key.move_to('another_bucket')
+      end
     end
   end
 end
