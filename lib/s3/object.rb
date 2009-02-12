@@ -1,12 +1,12 @@
 module Awsum
   class S3
-    class Key
-      attr_reader :name, :bucket, :last_modified, :etag, :size, :owner, :storage_class
+    class Object
+      attr_reader :key, :bucket, :last_modified, :etag, :size, :owner, :storage_class
 
-      def initialize(s3, bucket, name, last_modified, etag, size, owner, storage_class)
+      def initialize(s3, bucket, key, last_modified, etag, size, owner, storage_class)
         @s3 = s3
         @bucket = bucket
-        @name = name
+        @key = key
         @last_modified = last_modified
         @etag = etag
         @size = size
@@ -14,65 +14,65 @@ module Awsum
         @storage_class = storage_class
       end
 
-      # Get the headers for this key
+      # Get the headers for this Object
       #
       # All header methods map directly to the Net::HTTPHeader module
       def headers
-        @headers ||= @s3.key_headers(@bucket, @name)
+        @headers ||= @s3.object_headers(@bucket, @key)
       end
 
-      # Retrieve the data stored for this Key
+      # Retrieve the data stored for this Object
       #
       # You can get the data as a single call or add a block to retrieve the data in chunks
       # ==Examples
-      #   content = key.data
+      #   content = object.data
       #
       # or
       #
-      #   key.data do |chunk|
+      #   object.data do |chunk|
       #     # handle chunk
       #     puts chunk
       #   end
       def data(&block)
-        @s3.key_data @bucket, @name, &block
+        @s3.object_data @bucket, @key, &block
       end
 
       # Delete this Key
       def delete
-        @s3.delete_key(@bucket, @name)
+        @s3.delete_object(@bucket, @key)
       end
 
-      # Make a copy of this key with a new name
-      def copy(new_name, headers = nil, meta_headers = nil)
-        @s3.copy_key(@bucket, @name, nil, new_name, headers, meta_headers)
+      # Make a copy of this Object with a new key
+      def copy(new_key, headers = nil, meta_headers = nil)
+        @s3.copy_object(@bucket, @key, nil, new_key, headers, meta_headers)
       end
 
-      # Rename or move this key to a new name
-      def rename(new_name, headers = nil, meta_headers = nil)
-        copied = @s3.copy_key(@bucket, @name, nil, new_name, headers, meta_headers)
-        @s3.delete_key(@bucket, @name) if copied
+      # Rename or move this Object to a new key
+      def rename(new_key, headers = nil, meta_headers = nil)
+        copied = @s3.copy_object(@bucket, @key, nil, new_key, headers, meta_headers)
+        @s3.delete_object(@bucket, @key) if copied
       end
       alias_method :move, :rename
 
-      # Copy this Key to another Bucket
+      # Copy this Object to another Bucket
       #
-      def copy_to(new_bucket, new_name = nil, headers = nil, meta_headers = nil)
-        @s3.copy_key(@bucket, @name, new_bucket, new_name, headers, meta_headers)
+      def copy_to(new_bucket, new_key = nil, headers = nil, meta_headers = nil)
+        @s3.copy_object(@bucket, @key, new_bucket, new_key, headers, meta_headers)
       end
 
-      # Move this Key to another Bucket
-      def move_to(new_bucket, new_name = nil, headers = nil, meta_headers = nil)
-        copied = @s3.copy_key(@bucket, @name, new_bucket, new_name, headers, meta_headers)
-        @s3.delete_key(@bucket, @name) if copied
+      # Move this Object to another Bucket
+      def move_to(new_bucket, new_key = nil, headers = nil, meta_headers = nil)
+        copied = @s3.copy_object(@bucket, @key, new_bucket, new_key, headers, meta_headers)
+        @s3.delete_object(@bucket, @key) if copied
       end
     end
 
 #TODO: Create a more advanced array which can deal with pagination
-    class KeyParser < Awsum::Parser #:nodoc:
+    class ObjectParser < Awsum::Parser #:nodoc:
       def initialize(s3)
         @s3 = s3
         @bucket = ''
-        @keys = []
+        @objects = []
         @text = nil
         @stack = []
       end
@@ -103,7 +103,7 @@ module Awsum
               @bucket = @text.strip
             end
           when 'Contents'
-            @keys << Key.new(
+            @objects << Object.new(
                           @s3,
                           @bucket,
                           @current['Key'],
@@ -131,7 +131,7 @@ module Awsum
       end
 
       def result
-        @keys
+        @objects
       end
     end
   end

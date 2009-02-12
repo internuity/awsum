@@ -67,7 +67,7 @@ class ErrorTest < Test::Unit::TestCase
         @s3.expects(:process_request).yields(response)
 
         begin
-          @s3.create_key('test', 'test.txt', 'some data')
+          @s3.create_object('test', 'test.txt', 'some data')
         rescue Awsum::Error => e
           @error = e
         end

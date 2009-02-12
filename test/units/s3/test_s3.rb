@@ -105,11 +105,11 @@ class S3Test < Test::Unit::TestCase
         assert @bucket.delete
       end
 
-      should "be able to delete itself with keys" do
+      should "be able to delete itself with Object(s)" do
         xml = load_fixture('s3/keys')
         response = stub('Http Response', :is_a? => true, :body => xml)
         requests = sequence('requests')
-        ['get keys', 'delete first key', 'delete second key', 'delete bucket'].each do |process_request|
+        ['get objects', 'delete first object', 'delete second object', 'delete bucket'].each do |process_request|
           @s3.expects(:send_s3_request).returns(response).in_sequence(requests)
         end
 
@@ -118,8 +118,8 @@ class S3Test < Test::Unit::TestCase
     end
   end
 
-  context "Keys: " do
-    context "creating a key" do
+  context "Objects: " do
+    context "creating an object" do
       context "with a string" do
         setup {
           response = stub('Http Response', :is_a? => true)
@@ -127,7 +127,7 @@ class S3Test < Test::Unit::TestCase
         }
 
         should "send data" do
-          assert @s3.create_key('test', 'test.txt', 'Some text')
+          assert @s3.create_object('test', 'test.txt', 'Some text')
         end
       end
 
@@ -147,42 +147,42 @@ class S3Test < Test::Unit::TestCase
         }
 
         should "send data" do
-          assert @s3.create_key('test', 'test.txt', @data)
+          assert @s3.create_object('test', 'test.txt', @data)
         end
       end
     end
 
-    context "deleting a key" do
+    context "deleting an object" do
       setup {
         response = stub('Http Response', :is_a? => true)
         @s3.expects(:send_s3_request).returns(response)
       }
 
       should "succeed" do
-        @s3.delete_key('test', 'test.txt')
+        @s3.delete_object('test', 'test.txt')
       end
     end
 
-    context "copying a key" do
-      context "to a different bucket with same name" do
+    context "copying an object" do
+      context "to a different bucket with same key" do
         setup {
           response = stub('Http Response', :is_a? => true, :body => '')
           @s3.expects(:send_s3_request).returns(response)
         }
 
         should "succeed" do
-          assert @s3.copy_key('test', 'test.txt', 'test2')
+          assert @s3.copy_object('test', 'test.txt', 'test2')
         end
       end
 
-      context "within the same bucket with a different name" do
+      context "within the same bucket with a different key" do
         setup {
           response = stub('Http Response', :is_a? => true, :body => '')
           @s3.expects(:send_s3_request).returns(response)
         }
 
         should "succeed" do
-          assert @s3.copy_key('test', 'test.txt', nil, 'test2.txt')
+          assert @s3.copy_object('test', 'test.txt', nil, 'test2.txt')
         end
       end
 
@@ -193,14 +193,14 @@ class S3Test < Test::Unit::TestCase
         }
 
         should "succeed" do
-          assert @s3.copy_key('test', 'test.txt', nil, nil, {'New-Header' => 'two'})
+          assert @s3.copy_object('test', 'test.txt', nil, nil, {'New-Header' => 'two'})
         end
       end
 
-      context "within the same bucket, with the same name and with no changed headers" do
+      context "within the same bucket, with the same object and with no changed headers" do
         should "raise an error" do
           assert_raise ArgumentError do
-            @s3.copy_key('test', 'test.txt')
+            @s3.copy_object('test', 'test.txt')
           end
         end
       end
@@ -214,71 +214,71 @@ class S3Test < Test::Unit::TestCase
 
         should "raise an error" do
           assert_raise Awsum::Error do
-            @s3.copy_key('test', 'test.txt', 'test2')
+            @s3.copy_object('test', 'test.txt', 'test2')
           end
         end
       end
     end
 
-    context "a key" do
+    context "an object" do
       setup {
-        @key = Awsum::S3::Key.new(@s3, 'test', 'test.txt', Time.now, 'XXXXX', 234, 'AAAAAA', 'STANDARD')
+        @object = Awsum::S3::Object.new(@s3, 'test', 'test.txt', Time.now, 'XXXXX', 234, 'AAAAAA', 'STANDARD')
       }
 
       should "be able to delete itself" do
         response = stub('Http Response', :is_a? => true)
         @s3.expects(:send_s3_request).returns(response)
 
-        assert @key.delete
+        assert @object.delete
       end
 
-      should "be able to copy itself to a different name" do
+      should "be able to copy itself to a different key" do
         response = stub('Http Response', :is_a? => true, :body => '')
         @s3.expects(:send_s3_request).returns(response)
 
-        assert @key.copy('test2.txt')
+        assert @object.copy('test2.txt')
       end
 
       should "be able to rename itself" do
         response = stub('Http Response', :is_a? => true, :body => '')
         @s3.expects(:send_s3_request).returns(response).times(2)
 
-        assert @key.rename('test2.txt')
+        assert @object.rename('test2.txt')
       end
 
       should "be able to move itself" do
         response = stub('Http Response', :is_a? => true, :body => '')
         @s3.expects(:send_s3_request).returns(response).times(2)
 
-        assert @key.move('test2.txt')
+        assert @object.move('test2.txt')
       end
 
       should "be able to copy itself to a new bucket" do
         response = stub('Http Response', :is_a? => true, :body => '')
         @s3.expects(:send_s3_request).returns(response)
 
-        assert @key.copy_to('another_bucket')
+        assert @object.copy_to('another_bucket')
       end
 
       should "be able to move itself to a new bucket" do
         response = stub('Http Response', :is_a? => true, :body => '')
         @s3.expects(:send_s3_request).returns(response).times(2)
 
-        assert @key.move_to('another_bucket')
+        assert @object.move_to('another_bucket')
       end
 
       should "be able to return it's headers" do
         response = stub('Http Response')
         @s3.expects(:send_s3_request).returns(response)
 
-        assert @key.headers
+        assert @object.headers
       end
 
       should "be able to return it's data" do
         response = stub('Http Response', :body => 'test')
         @s3.expects(:send_s3_request).yields(response)
 
-        assert_equal 'test', @key.data
+        assert_equal 'test', @object.data
       end
 
       should "be able to return it's data in chunks" do
@@ -287,7 +287,7 @@ class S3Test < Test::Unit::TestCase
         @s3.expects(:send_s3_request).yields(response)
 
         data = ''
-        @key.data do |chunk|
+        @object.data do |chunk|
           data << chunk
         end
 

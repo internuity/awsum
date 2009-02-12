@@ -1,5 +1,5 @@
 require 's3/bucket'
-require 's3/key'
+require 's3/object'
 require 's3/headers'
 
 module Awsum
@@ -107,52 +107,52 @@ module Awsum
       paramters['prefix'] = options[:prefix] if options[:prefix]
 
       response = send_s3_request('GET', :bucket => bucket_name, :paramters => paramters)
-      parser = Awsum::S3::KeyParser.new(self)
+      parser = Awsum::S3::ObjectParser.new(self)
       parser.parse(response.body)
     end
 
-    # Create a new Key in the specified Bucket
+    # Create a new Object in the specified Bucket
     #
     # ===Parameters
     # * <tt>bucket_name</tt> - The name of the Bucket in which to store the Key
-    # * <tt>key_name</tt> - The name/path of the Key to store
-    # * <tt>data</tt> - The data to be stored in this Key
+    # * <tt>key</tt> - The name/path of the Key to store
+    # * <tt>data</tt> - The data to be stored in this Object
     # * <tt>headers</tt> - Standard HTTP headers to be sent along
     # * <tt>meta_headers</tt> - Meta headers to be stored along with the key
     # * <tt>acl</tt> - A canned access policy, can be one of <tt>:private</tt>, <tt>:public_read</tt>, <tt>:public_read_write</tt> or <tt>:authenticated_read</tt>
-    def create_key(bucket_name, key_name, data, headers = {}, meta_headers = {}, acl = :private)
+    def create_object(bucket_name, key, data, headers = {}, meta_headers = {}, acl = :private)
       headers = headers.dup
       meta_headers.each do |k,v|
         headers[k =~ /^x-amz-meta-/i ? k : "x-amz-meta-#{k}"] = v
       end
       headers['x-amz-acl'] = acl.to_s.gsub(/_/, '-')
 
-      response = send_s3_request('PUT', :bucket => bucket_name, :key => key_name, :headers => headers, :data => data)
+      response = send_s3_request('PUT', :bucket => bucket_name, :key => key, :headers => headers, :data => data)
       response.is_a?(Net::HTTPSuccess)
     end
 
-    # Retrieve the headers for this Key
+    # Retrieve the headers for this Object
     #
     # All header methods map directly to the Net::HTTPHeader module
-    def key_headers(bucket_name, key_name)
-      response = send_s3_request('HEAD', :bucket => bucket_name, :key => key_name)
+    def object_headers(bucket_name, key)
+      response = send_s3_request('HEAD', :bucket => bucket_name, :key => key)
       Headers.new(response)
     end
 
-    # Retrieve the data stored for this specified bucket and key
+    # Retrieve the data stored for the specified Object
     #
     # You can get the data as a single call or add a block to retrieve the data in chunks
     # ==Examples
-    #   data = s3.key_data('test-bucket', 'key-name')
+    #   data = s3.object_data('test-bucket', 'key')
     #
     # or
     #
-    #   s3.key_data('test-bucket', 'key-name') do |chunk|
+    #   s3.object_data('test-bucket', 'key') do |chunk|
     #     # handle chunk
     #     puts chunk
     #   end
-    def key_data(bucket_name, key_name, &block)
-      send_s3_request('GET', :bucket => bucket_name, :key => key_name) do |response|
+    def object_data(bucket_name, key, &block)
+      send_s3_request('GET', :bucket => bucket_name, :key => key) do |response|
         if block_given?
           response.read_body &block
           return true
@@ -162,39 +162,39 @@ module Awsum
       end
     end
 
-    # Deletes a Key from a Bucket
-    def delete_key(bucket_name, key_name)
-      response = send_s3_request('DELETE', :bucket => bucket_name, :key => key_name)
+    # Deletes an Object from a Bucket
+    def delete_object(bucket_name, key)
+      response = send_s3_request('DELETE', :bucket => bucket_name, :key => key)
       response.is_a?(Net::HTTPSuccess)
     end
 
-    # Copy the contents of a Key to another key name or bucket
+    # Copy the contents of an Object to another key and/or bucket
     # 
     # ===Parameters
     # * <tt>source_bucket_name</tt> - The name of the Bucket from which to copy
-    # * <tt>source_key_name</tt> - The name of the Key from which to copy
+    # * <tt>source_key</tt> - The name of the Key from which to copy
     # * <tt>destination_bucket_name</tt> - The name of the Bucket to which to copy (Can be nil if copying within the same bucket, or updating header data of existing Key)
-    # * <tt>destination_key_name</tt> - The name of the Key to which to copy (Can be nil if copying to a new bucket with same key name, or updating header data of existing Key)
+    # * <tt>destination_key</tt> - The name of the Key to which to copy (Can be nil if copying to a new bucket with same key, or updating header data of existing Key)
     # * <tt>headers</tt> - If not nil, the headers are replaced with this information
     # * <tt>meta_headers</tt> - If not nil, the meta headers are replaced with this information
     #
     #--
     # TODO: Need to handle copy-if-... headers
-    def copy_key(source_bucket_name, source_key_name, destination_bucket_name = nil, destination_key_name = nil, headers = nil, meta_headers = nil)
-      raise ArgumentError.new('You must include one of destination_bucket_name, destination_key_name or headers to be replaced') if destination_bucket_name.nil? && destination_key_name.nil? && headers.nil? && meta_headers.nil?
+    def copy_object(source_bucket_name, source_key, destination_bucket_name = nil, destination_key= nil, headers = nil, meta_headers = nil)
+      raise ArgumentError.new('You must include one of destination_bucket_name, destination_key or headers to be replaced') if destination_bucket_name.nil? && destination_key.nil? && headers.nil? && meta_headers.nil?
 
       headers = {
-          'x-amz-copy-source' => "/#{source_bucket_name}/#{source_key_name}",
-          'x-amz-metadata-directive' => (((destination_bucket_name.nil? && destination_key_name.nil?) || !(headers.nil? || meta_headers.nil?)) ? 'REPLACE' : 'COPY')
+          'x-amz-copy-source' => "/#{source_bucket_name}/#{source_key}",
+          'x-amz-metadata-directive' => (((destination_bucket_name.nil? && destination_key.nil?) || !(headers.nil? || meta_headers.nil?)) ? 'REPLACE' : 'COPY')
         }.merge(headers||{})
       meta_headers.each do |k,v|
         headers[k =~ /^x-amz-meta-/i ? k : "x-amz-meta-#{k}"] = v
       end unless meta_headers.nil?
 
       destination_bucket_name ||= source_bucket_name
-      destination_key_name ||= source_key_name
+      destination_key ||= source_key
 
-      response = send_s3_request('PUT', :bucket => destination_bucket_name, :key => destination_key_name, :headers => headers, :data => nil)
+      response = send_s3_request('PUT', :bucket => destination_bucket_name, :key => destination_key, :headers => headers, :data => nil)
       if response.is_a?(Net::HTTPSuccess)
         #Check for delayed error (See http://docs.amazonwebservices.com/AmazonS3/2006-03-01/RESTObjectCOPY.html#RESTObjectCOPY_Response)
         response_body = response.body
