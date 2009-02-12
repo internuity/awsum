@@ -1,5 +1,6 @@
 require 's3/bucket'
 require 's3/key'
+require 's3/headers'
 
 module Awsum
   # Handles all interaction with Amazon S3
@@ -58,6 +59,10 @@ module Awsum
       response = send_s3_request
       parser = Awsum::S3::BucketParser.new(self)
       parser.parse(response.body)
+    end
+
+    def bucket(name)
+      Bucket.new(self, name)
     end
 
     # Create a new Bucket
@@ -124,6 +129,22 @@ module Awsum
 
       response = send_s3_request('PUT', :bucket => bucket_name, :key => key_name, :headers => headers, :data => data)
       response.is_a?(Net::HTTPSuccess)
+    end
+
+    def key_headers(bucket_name, key_name)
+      response = send_s3_request('HEAD', :bucket => bucket_name, :key => key_name)
+      Headers.new(response)
+    end
+
+    def key_data(bucket_name, key_name, &block)
+      send_s3_request('GET', :bucket => bucket_name, :key => key_name) do |response|
+        if block_given?
+          response.read_body &block
+          return true
+        else
+          return response.body
+        end
+      end
     end
 
     # Deletes a Key from a Bucket

@@ -44,4 +44,15 @@ class BucketsTest < Test::Unit::TestCase
       end
     end
   end
+
+  context "Bucket: " do
+    setup {
+      @s3 = Awsum::S3.new('abc', 'xyz')
+    }
+
+    should "be able to create a bucket without calling the S3 API" do
+      bucket = @s3.bucket('test-bucket')
+      assert_equal 'test-bucket', bucket.name
+    end
+  end
 end

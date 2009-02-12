@@ -3,7 +3,7 @@ module Awsum
     class Bucket
       attr_reader :name, :creation_date
 
-      def initialize(s3, name, creation_date)
+      def initialize(s3, name, creation_date = nil)
         @s3 = s3
         @name = name
         @creation_date = creation_date

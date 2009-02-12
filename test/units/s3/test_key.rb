@@ -64,4 +64,48 @@ class KeysTest < Test::Unit::TestCase
       end
     end
   end
+
+  context "Keys: " do
+    setup {
+      @s3 = Awsum::S3.new('abc', 'xyz')
+    }
+
+    context "When retrieving key headers" do
+      setup {
+        response = mock('Response')
+        @s3.expects(:send_s3_request).returns(response)
+        @headers = @s3.key_headers('test-bucket', 'test-key')
+      }
+
+      should "be able to retrieve key headers" do
+        assert @headers
+      end
+
+      should "be of class Awsum::S3::Headers" do
+        assert @headers.is_a?(Awsum::S3::Headers)
+      end
+    end
+
+    context "when retrieving key data" do
+      should "be able to retrieve all the data" do
+        response = mock('Response', :body => 'test-data')
+        @s3.expects(:send_s3_request).yields(response)
+
+        assert_equal 'test-data', @s3.key_data('test-bucket', 'test-key')
+      end
+
+      should "be able to retrieve the data in chunks" do
+        response = mock('Response')
+        response.expects(:read_body).yields('test-data')
+        @s3.expects(:send_s3_request).yields(response)
+
+        data = ''
+        @s3.key_data('test-bucket', 'test-key') do |chunk|
+          data << chunk
+        end
+
+        assert_equal 'test-data', data
+      end
+    end
+  end
 end

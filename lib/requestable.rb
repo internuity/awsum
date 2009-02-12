@@ -53,7 +53,7 @@ module Awsum
     # Sends a full request including headers and possible post data
     #
     # Used for S3 requests
-    def send_s3_request(method = 'GET', options = {})
+    def send_s3_request(method = 'GET', options = {}, &block)
       bucket = options[:bucket] || ''
       key = options[:key] || ''
       parameters = options[:parameters] || {}
@@ -99,12 +99,16 @@ module Awsum
 
       url = "https://#{host_name}#{key[0..0] == '/' ? '' : '/'}#{key}#{parameters.size == 0 ? '' : "?#{parameters.collect{|k,v| v.nil? ? k.to_s : "#{CGI::escape(k.to_s)}=#{CGI::escape(v.to_s)}"}.join('&')}"}"
 
-      response = process_request(method, url, headers, data)
-
-      if response.is_a?(Net::HTTPSuccess)
-        response
-      else
-        raise Awsum::Error.new(response)
+      process_request(method, url, headers, data) do |response|
+        if response.is_a?(Net::HTTPSuccess)
+          if block_given?
+            block.call(response)
+          else
+            response
+          end
+        else
+          raise Awsum::Error.new(response)
+        end
       end
     end
 
@@ -127,7 +131,7 @@ module Awsum
       "http://#{bucket}#{bucket.blank? ? '' : '.'}#{host}#{key[0..0] == '/' ? '' : '/'}#{key}?AWSAccessKeyId=#{@access_key}&Signature=#{CGI::escape(signature)}&Expires=#{expires}"
     end
 
-    def process_request(method, url, headers = {}, data = nil)
+    def process_request(method, url, headers = {}, data = nil, &block)
       #TODO: Allow secure/non-secure
       uri = URI.parse(url)
       uri.scheme = 'https'
@@ -162,41 +166,21 @@ module Awsum
           end
         end
 
-        if ENV['DEBUG']
-          puts "Request:"
-          puts request.inspect
-          request.each_capitalized do |key,val|
-            puts "#{key} = #{val}"
+        http.request(request) do |response|
+          case response
+            when Net::HTTPSuccess
+              if block_given?
+                block.call(response)
+              else
+                return response
+              end
+            when Net::HTTPMovedPermanently, Net::HTTPFound, Net::HTTPTemporaryRedirect
+              new_uri = URI.parse(response['location'])
+              uri.host = new_uri.host
+              uri.path = "#{new_uri.path}#{uri.path unless uri.path = '/'}"
+              process_request(method, uri.to_s, headers, data, &block)
           end
-          puts
-          puts request.body
-          puts
         end
-
-        response = http.request(request)
-
-        if ENV['DEBUG']
-          puts "Response"
-          puts response.inspect
-          puts response.code
-          response.each_capitalized do |key,val|
-            puts "#{key} = #{val}"
-          end
-          puts
-          puts response.body
-          puts
-        end
-
-        case response
-          when Net::HTTPSuccess
-            response
-          when Net::HTTPMovedPermanently, Net::HTTPFound, Net::HTTPTemporaryRedirect
-            new_uri = URI.parse(response['location'])
-            uri.host = new_uri.host
-            uri.path = "#{new_uri.path}#{uri.path unless uri.path = '/'}"
-            response = process_request(method, uri.to_s, headers, data)
-        end
-        response
       end
     end
 

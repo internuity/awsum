@@ -64,7 +64,7 @@ class ErrorTest < Test::Unit::TestCase
       setup {
         xml = load_fixture('s3/invalid_request_signature')
         response = stub('Http Response', :body => xml, :code => 403)
-        @s3.expects(:process_request).returns(response)
+        @s3.expects(:process_request).yields(response)
 
         begin
           @s3.create_key('test', 'test.txt', 'some data')

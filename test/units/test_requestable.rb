@@ -47,7 +47,7 @@ class RequestableTest < Test::Unit::TestCase
 
           self.expects(:process_request).with{|method, uri, headers, data| 
             headers['authorization'] == 'AWS 0PN5J17HBGZHT7JJ3X82:xXjDGYUmKxnwqr5KXNPGldn5LbA='
-          }.returns(@response)
+          }.yields(@response)
 
           send_s3_request(method, :bucket => bucket, :key => key, :headers => headers)
         }
@@ -71,7 +71,7 @@ class RequestableTest < Test::Unit::TestCase
 
           self.expects(:process_request).with{|method, uri, headers, data| 
             headers['authorization'] == 'AWS 0PN5J17HBGZHT7JJ3X82:hcicpDDvL9SsO6AkvxqmIWkmOuQ='
-          }.returns(@response)
+          }.yields(@response)
 
           send_s3_request(method, :bucket => bucket, :key => key, :headers => headers)
         }
@@ -94,7 +94,7 @@ class RequestableTest < Test::Unit::TestCase
 
           self.expects(:process_request).with{|method, uri, headers, data| 
             headers['authorization'] == 'AWS 0PN5J17HBGZHT7JJ3X82:thdUi9VAkzhkniLj96JIrOPGi0g='
-          }.returns(@response)
+          }.yields(@response)
 
           send_s3_request(method, :bucket => bucket, :key => key, :parameters => parameters, :headers => headers)
         }
@@ -119,7 +119,7 @@ class RequestableTest < Test::Unit::TestCase
 
           self.expects(:process_request).with{|method, uri, headers, data| 
             headers['authorization'] == 'AWS 0PN5J17HBGZHT7JJ3X82:k3nL7gH3+PadhTEVn5Ip83xlYzk='
-          }.returns(@response)
+          }.yields(@response)
 
           send_s3_request(method, :bucket => bucket, :key => key, :parameters => parameters, :headers => headers)
         }
@@ -152,7 +152,7 @@ class RequestableTest < Test::Unit::TestCase
 
           self.expects(:process_request).with{|method, uri, headers, data| 
             headers['authorization'] == 'AWS 0PN5J17HBGZHT7JJ3X82:C0FlOtU8Ylb9KDTpZqYkZPX91iI='
-          }.returns(@response)
+          }.yields(@response)
 
           send_s3_request(method, :bucket => bucket, :key => key, :parameters => parameters, :headers => headers)
         }
@@ -175,7 +175,7 @@ class RequestableTest < Test::Unit::TestCase
 
           self.expects(:process_request).with{|method, uri, headers, data| 
             headers['authorization'] == 'AWS 0PN5J17HBGZHT7JJ3X82:Db+gepJSUbZKwpx1FR0DLtEYoZA='
-          }.returns(@response)
+          }.yields(@response)
 
           send_s3_request(method, :bucket => bucket, :key => key, :parameters => parameters, :headers => headers)
         }
@@ -198,7 +198,7 @@ class RequestableTest < Test::Unit::TestCase
 
           self.expects(:process_request).with{|method, uri, headers, data| 
             headers['authorization'] == 'AWS 0PN5J17HBGZHT7JJ3X82:dxhSBHoI6eVSPcXJqEghlUzZMnY='
-          }.returns(@response)
+          }.yields(@response)
 
           send_s3_request(method, :bucket => bucket, :key => key, :parameters => parameters, :headers => headers)
         }
