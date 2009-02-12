@@ -14,6 +14,29 @@ module Awsum
         @storage_class = storage_class
       end
 
+      # Get the headers for this key
+      #
+      # All header methods map directly to the Net::HTTPHeader module
+      def headers
+        @headers ||= @s3.key_headers(@bucket, @name)
+      end
+
+      # Retrieve the data stored for this Key
+      #
+      # You can get the data as a single call or add a block to retrieve the data in chunks
+      # ==Examples
+      #   content = key.data
+      #
+      # or
+      #
+      #   key.data do |chunk|
+      #     # handle chunk
+      #     puts chunk
+      #   end
+      def data(&block)
+        @s3.key_data @bucket, @name, &block
+      end
+
       # Delete this Key
       def delete
         @s3.delete_key(@bucket, @name)

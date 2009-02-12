@@ -266,6 +266,33 @@ class S3Test < Test::Unit::TestCase
 
         assert @key.move_to('another_bucket')
       end
+
+      should "be able to return it's headers" do
+        response = stub('Http Response')
+        @s3.expects(:send_s3_request).returns(response)
+
+        assert @key.headers
+      end
+
+      should "be able to return it's data" do
+        response = stub('Http Response', :body => 'test')
+        @s3.expects(:send_s3_request).yields(response)
+
+        assert_equal 'test', @key.data
+      end
+
+      should "be able to return it's data in chunks" do
+        response = stub('Http Response')
+        response.expects(:read_body).yields('test')
+        @s3.expects(:send_s3_request).yields(response)
+
+        data = ''
+        @key.data do |chunk|
+          data << chunk
+        end
+
+        assert_equal 'test', data
+      end
     end
   end
 end

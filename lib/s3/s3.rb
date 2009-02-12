@@ -131,11 +131,26 @@ module Awsum
       response.is_a?(Net::HTTPSuccess)
     end
 
+    # Retrieve the headers for this Key
+    #
+    # All header methods map directly to the Net::HTTPHeader module
     def key_headers(bucket_name, key_name)
       response = send_s3_request('HEAD', :bucket => bucket_name, :key => key_name)
       Headers.new(response)
     end
 
+    # Retrieve the data stored for this specified bucket and key
+    #
+    # You can get the data as a single call or add a block to retrieve the data in chunks
+    # ==Examples
+    #   data = s3.key_data('test-bucket', 'key-name')
+    #
+    # or
+    #
+    #   s3.key_data('test-bucket', 'key-name') do |chunk|
+    #     # handle chunk
+    #     puts chunk
+    #   end
     def key_data(bucket_name, key_name, &block)
       send_s3_request('GET', :bucket => bucket_name, :key => key_name) do |response|
         if block_given?
