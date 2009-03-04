@@ -54,7 +54,8 @@ spec = Gem::Specification.new do |s|
   s.files             = FileList["README*",
                                  "LICENSE",
                                  "Rakefile",
-                                 "{lib,test}/**/*"].to_a
+                                 "{lib,test}/**/*",
+                                 "{lib,test}/*"].to_a
   s.require_path      = "lib"
   s.test_files        = FileList["test/**/test_*.rb"].to_a + FileList["test/fixtures/**/*.xml"].to_a
   s.rubyforge_project = "awsum"
