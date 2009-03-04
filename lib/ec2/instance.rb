@@ -38,6 +38,7 @@ module Awsum
       # You must specify a size or a snapshot_id
       def create_volume(size = nil, snapshot_id = nil, device = '/dev/sdh')
         raise ArgumentError.new('You must specify a size if not creating a volume from a snapshot') if size.blank? && snapshot_id.blank?
+        raise ArgumentError.new('You must specify a device to attach the volume to') unless device
 
         volume = @ec2.create_volume availability_zone, :size => size, :snapshot_id => snapshot_id
         while volume.status != 'available'
