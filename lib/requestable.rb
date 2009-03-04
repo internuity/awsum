@@ -166,21 +166,30 @@ module Awsum
           end
         end
 
-        http.request(request) do |response|
-          case response
-            when Net::HTTPSuccess
-              if block_given?
-                block.call(response)
-              else
-                return response
-              end
-            when Net::HTTPMovedPermanently, Net::HTTPFound, Net::HTTPTemporaryRedirect
-              new_uri = URI.parse(response['location'])
-              uri.host = new_uri.host
-              uri.path = "#{new_uri.path}#{uri.path unless uri.path = '/'}"
-              process_request(method, uri.to_s, headers, data, &block)
+        if block_given?
+          http.request(request) do |response|
+            handle_response response, &block
           end
+        else
+          response = http.request(request)
+          handle_response response
         end
+      end
+    end
+
+    def handle_response(response, &block)
+      case response
+        when Net::HTTPSuccess
+          if block_given?
+            block.call(response)
+          else
+            response
+          end
+        when Net::HTTPMovedPermanently, Net::HTTPFound, Net::HTTPTemporaryRedirect
+          new_uri = URI.parse(response['location'])
+          uri.host = new_uri.host
+          uri.path = "#{new_uri.path}#{uri.path unless uri.path = '/'}"
+          process_request(method, uri.to_s, headers, data, &block)
       end
     end
 
