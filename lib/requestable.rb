@@ -190,6 +190,8 @@ module Awsum
           uri.host = new_uri.host
           uri.path = "#{new_uri.path}#{uri.path unless uri.path = '/'}"
           process_request(method, uri.to_s, headers, data, &block)
+        else
+          response
       end
     end
 
