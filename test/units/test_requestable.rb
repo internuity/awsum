@@ -15,7 +15,7 @@ class RequestableTest < Test::Unit::TestCase
         @secret_key = '123456'
         @host = 'test.amazonaws.com'
         self.expects(:process_request).with{|method, uri| 
-          uri == 'https://test.amazonaws.com/?AWSAccessKeyId=ABCDEF&Action=DescribeImages&ImageId.1=ami-1234567&SignatureMethod=HmacSHA256&SignatureVersion=2&Timestamp=2009-01-23T03%3A34%3A38.000Z&Version=2008-12-01&Signature=Da66foYzsBTzMoCgCMBaUJrr4ha3NpWEWZ%2BHxl5h5eg%3D'
+          uri == 'https://test.amazonaws.com/?AWSAccessKeyId=ABCDEF&Action=DescribeImages&ImageId.1=ami-1234567&SignatureMethod=HmacSHA256&SignatureVersion=2&Timestamp=2009-01-23T03%3A34%3A38.000Z&Version=2009-03-01&Signature=bikPwTO5exhadYmH4usOlmPwgjiK8MQW4w99cjbx9U0%3D'
         }.returns(@response)
 
         send_query_request({'Action' => 'DescribeImages', 'ImageId.1' => 'ami-1234567', 'Timestamp' => '2009-01-23T03:34:38.000Z'})

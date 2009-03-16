@@ -3,9 +3,10 @@ require 'ec2/availability_zone'
 require 'ec2/image'
 require 'ec2/instance'
 require 'ec2/keypair'
+require 'ec2/region'
+require 'ec2/reserved_instances_offering'
 require 'ec2/security_group'
 require 'ec2/snapshot'
-require 'ec2/region'
 require 'ec2/volume'
 
 module Awsum
@@ -641,6 +642,36 @@ module Awsum
 
       response = send_query_request(params)
       response.is_a?(Net::HTTPSuccess)
+    end
+
+    # List all reserved instance offerings that are available for purchase
+    #
+    # ===Options:
+    # * <tt>:reserved_instances_offering_ids</tt> - Display the reserved instance offerings with the specified ids. Can be an individual id or an array of ids
+    # * <tt>:instance_type</tt> - Display available reserved instance offerings of the specific instance type, can be one of [m1.small, m1.large, m1.xlarge, c1.medium, c1.xlarge], default is all
+    # * <tt>:availability_zone</tt> - Display the reserved instance offerings within the specified availability zone
+    # * <tt>:product_description</tt> - Display the reserved instance offerings with the specified product description
+    #
+    # ===Example
+    #   #To get all offerings for m1.small instances in availability zone us-east-1a
+    #   ec2.reserved_instances_offerings(:instance_type => 'm1.small', :availability_zone => 'us-east-1a')
+    def reserved_instances_offerings(options = {})
+      action = 'DescribeReservedInstancesOfferings'
+      params = {
+        'Action' => action
+      }
+      params.merge!(array_to_params(options[:reserved_instances_offering_ids], 'ReservedInstancesOfferingId')) if options[:reserved_instances_offering_ids]
+      params['InstanceType'] = options[:instance_type] if options[:instance_type]
+      params['AvailabilityZone'] = options[:availability_zone] if options[:availability_zone]
+      params['ProductDescription'] = options[:product_description] if options[:product_description]
+
+      response = send_query_request(params)
+      parser = Awsum::Ec2::ReservedInstancesOfferingParser.new(self)
+      parser.parse(response.body)
+    end
+
+    def reserved_instances_offering(id)
+      reserved_instances_offerings(:reserved_instances_offering_ids => id)[0]
     end
 
 #private

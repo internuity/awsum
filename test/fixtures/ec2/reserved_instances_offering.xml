@@ -1,0 +1,15 @@
+<?xml version="1.0"?>
+<DescribeReservedInstancesOfferingsResponse xmlns="http://ec2.amazonaws.com/doc/2009-03-01/">
+    <requestId>f8d3b222-ebf5-4223-b453-2de944d7c178</requestId>
+    <reservedInstancesOfferingsSet>
+        <item>
+            <reservedInstancesOfferingId>60dcfab3-a56c-4092-8c90-3677e9da02b7</reservedInstancesOfferingId>
+            <instanceType>m1.small</instanceType>
+            <availabilityZone>us-east-1a</availabilityZone>
+            <duration>31536000</duration>
+            <fixedPrice>325.0</fixedPrice>
+            <usagePrice>0.03</usagePrice>
+            <productDescription>Linux/UNIX</productDescription>
+        </item>
+    </reservedInstancesOfferingsSet>
+</DescribeReservedInstancesOfferingsResponse>

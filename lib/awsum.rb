@@ -15,9 +15,9 @@ require 's3/s3'
 
 module Awsum
   
-  VERSION = "0.3"
+  VERSION = "0.4"
 
-  API_VERSION = '2008-12-01'
+  API_VERSION = '2009-03-01'
   SIGNATURE_VERSION = 2
 end
 

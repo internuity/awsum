@@ -1021,4 +1021,35 @@ class ImagesTest < Test::Unit::TestCase
       end
     end
   end
+
+  context "Reserved Instances: " do
+    context "retrieving a list of available reserved instance offerings" do
+      setup {
+        xml = load_fixture('ec2/reserved_instances_offerings')
+        response = stub('Http Response', :body => xml)
+        @ec2.expects(:send_query_request).returns(response)
+
+        @result = @ec2.reserved_instances_offerings
+      }
+
+      should "return an array of reserved instance offerings" do
+        assert @result.is_a?(Array)
+        assert_equal Awsum::Ec2::ReservedInstancesOffering, @result[0].class
+      end
+    end
+
+    context "retrieving a single reserved instance offering by id" do
+      setup {
+        xml = load_fixture('ec2/reserved_instances_offering')
+        response = stub('Http Response', :body => xml)
+        @ec2.expects(:send_query_request).returns(response)
+
+        @result = @ec2.reserved_instances_offering('60dcfab3-a56c-4092-8c90-3677e9da02b7')
+      }
+
+      should "return a single reserved instance offering" do
+        assert_equal Awsum::Ec2::ReservedInstancesOffering, @result.class
+      end
+    end
+  end
 end

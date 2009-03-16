@@ -36,7 +36,7 @@ ec2 = Awsum::Ec2.new(access_key, secret_key)
 s3 = Awsum::S3.new(access_key, secret_key)
 begin
   result = eval(command)
-  puts result.inspect
+  puts result
 rescue Awsum::Error => e
   puts "ERROR: #{e.inspect}"
 end
