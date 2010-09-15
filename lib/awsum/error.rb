@@ -1,5 +1,3 @@
-require 'parser'
-
 module Awsum
   class Error < StandardError
     attr_reader :response_code, :code, :message, :request_id, :additional

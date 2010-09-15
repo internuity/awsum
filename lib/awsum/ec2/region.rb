@@ -25,7 +25,7 @@ module Awsum
       def use(&block)
         old_host = @ec2.host
         @ec2.host = end_point
-        if block
+        if block_given?
           block.arity < 1 ? instance_eval(&block) : block[self]
         end
         @ec2.host = old_host

@@ -1,19 +1,38 @@
-require 'rake'
-require 'rake/testtask'
-require 'rake/rdoctask'
-require 'rake/gempackagetask'
+require 'bundler'
+begin
+  Bundler.setup(:default, :development)
+rescue Bundler::BundlerError => e
+  $stderr.puts e.message
+  $stderr.puts "Run `bundle install` to install missing gems"
+  exit e.status_code
+end
 
-$LOAD_PATH << File.join(File.dirname(__FILE__), 'lib')
+require 'rake/rdoctask'
+require 'rake/testtask'
+
+$LOAD_PATH.unshift('lib')
 require 'awsum'
 
-desc 'Default: run unit tests.'
-task :default => [:clean, :test]
+begin
+  require 'jeweler'
 
-desc 'Run tests'
-Rake::TestTask.new(:test) do |t|
-  t.libs << 'lib'
-  t.pattern = 'test/**/test_*.rb'
-  t.verbose = true
+  Jeweler::Tasks.new do |gem|
+    gem.name     = 'awsum'
+    gem.summary  = 'A library for working with Amazon Web Services in the most natural rubyish way'
+    gem.email    = 'andrew@andrewtimberlake.com'
+    gem.homepage = 'http://andrewtimberlake.com/projects/awsum'
+    gem.authors  = ['Andrew Timberlake']
+    gem.version  = Awsum::VERSION
+
+    #gem.add_dependency
+    gem.add_development_dependency('rspec', '>= 2.0.0.beta.22')
+  end
+
+  Jeweler::GemcutterTasks.new
+
+  task :default => :spec
+rescue LoadError
+  puts "Jeweler not available. Install it with: gem install jeweler"
 end
 
 desc 'Run code coverage'
@@ -43,44 +62,26 @@ task :clean do |t|
   FileUtils.rm_rf "pkg"
 end
 
-spec = Gem::Specification.new do |s| 
-  s.name              = "awsum"
-  s.version           = Awsum::VERSION
-  s.author            = "Andrew Timberlake"
-  s.email             = "andrew@andrewtimberlake.com"
-  s.homepage          = "http://www.internuity.net/projects/awsum"
-  s.platform          = Gem::Platform::RUBY
-  s.summary           = "Ruby library for working with Amazon Web Services"
-  s.files             = FileList["README*",
-                                 "LICENSE",
-                                 "Rakefile",
-                                 "{lib,test}/**/*",
-                                 "{lib,test}/*"].to_a
-  s.require_path      = "lib"
-  s.test_files        = FileList["test/**/test_*.rb"].to_a + FileList["test/fixtures/**/*.xml"].to_a
-  s.rubyforge_project = "awsum"
-  s.has_rdoc          = true
-  s.extra_rdoc_files  = FileList["README*"].to_a
-  s.rdoc_options << '--line-numbers' << '--inline-source'
-  s.add_development_dependency 'thoughtbot-shoulda'
-  s.add_development_dependency 'mocha'
-end
- 
-desc "Release new version"
-task :release => [:test, :sync_docs, :gem] do
-  require 'rubygems'
-  require 'rubyforge'
-  r = RubyForge.new
-  r.login
-  r.add_release spec.rubyforge_project,
-                spec.name,
-                spec.version,
-                File.join("pkg", "#{spec.name}-#{spec.version}.gem")
+require 'rake/testtask'
+Rake::TestTask.new(:test) do |test|
+  test.libs << 'test'
+  test.ruby_opts << '-rubygems'
+  test.pattern = 'test/**/test_*.rb'
+  test.verbose = true
 end
 
-desc "Generate a gemspec file for GitHub"
-task :gemspec do
-  File.open("#{spec.name}.gemspec", 'w') do |f|
-    f.write spec.to_ruby
+namespace :test do
+  Rake::TestTask.new(:units) do |test|
+    test.libs << 'test'
+    test.ruby_opts << '-rubygems'
+    test.pattern = 'test/unit/**/test_*.rb'
+    test.verbose = true
+  end
+
+  Rake::TestTask.new(:functionals) do |test|
+    test.libs << 'test'
+    test.ruby_opts << '-rubygems'
+    test.pattern = 'test/functional/**/test_*.rb'
+    test.verbose = true
   end
 end

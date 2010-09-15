@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+<DescribeReservedInstancesResponse xmlns="http://ec2.amazonaws.com/doc/2009-03-01/">
+    <requestId>10e29228-ef9f-46d8-8509-e468ab4fdef3</requestId>
+    <reservedInstancesSet>
+        <item>
+            <reservedInstancesId>1ba8e2e3-e6f7-4ef5-8c6c-6c6e4fad0a56</reservedInstancesId>
+            <instanceType>m1.large</instanceType>
+            <availabilityZone>us-east-1a</availabilityZone>
+            <start>2009-03-17T09:57:20.668Z</start>
+            <duration>31536000</duration>
+            <fixedPrice>0.12</fixedPrice>
+            <usagePrice>1300.0</usagePrice>
+            <instanceCount>1</instanceCount>
+            <productDescription>Linux/UNIX</productDescription>
+            <state>payment-pending</state>
+        </item>
+    </reservedInstancesSet>
+</DescribeReservedInstancesResponse>

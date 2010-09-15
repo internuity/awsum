@@ -264,7 +264,7 @@ class ImagesTest < Test::Unit::TestCase
         assert_equal Awsum::Ec2::Volume, volume.class
       end
     end
-    
+
     context "On a running EC2 instance" do
       should "be able to obtain an Instance representing the currently running machine" do
         xml = load_fixture('ec2/instance')
@@ -579,7 +579,7 @@ class ImagesTest < Test::Unit::TestCase
         xml = load_fixture('ec2/allocate_address')
         response = stub('Http Response', :body => xml)
         @ec2.expects(:send_query_request).returns(response)
-        
+
         @result = @ec2.allocate_address
       }
 
@@ -617,7 +617,7 @@ class ImagesTest < Test::Unit::TestCase
     context "release an address" do
       setup {
         requests = sequence('requests')
-        
+
         xml = load_fixture('ec2/unassociated_address')
         response = stub('Http Response', :body => xml)
         @ec2.expects(:send_query_request).returns(response).in_sequence(requests)
@@ -1038,18 +1038,33 @@ class ImagesTest < Test::Unit::TestCase
       end
     end
 
-    context "retrieving a single reserved instance offering by id" do
-      setup {
-        xml = load_fixture('ec2/reserved_instances_offering')
-        response = stub('Http Response', :body => xml)
-        @ec2.expects(:send_query_request).returns(response)
-
-        @result = @ec2.reserved_instances_offering('60dcfab3-a56c-4092-8c90-3677e9da02b7')
-      }
-
-      should "return a single reserved instance offering" do
-        assert_equal Awsum::Ec2::ReservedInstancesOffering, @result.class
-      end
-    end
+#TODO: Complete this
+#    context "retrieving a single reserved instance offering by id" do
+#      setup {
+#        xml = load_fixture('ec2/reserved_instances_offering')
+#        response = stub('Http Response', :body => xml)
+#        @ec2.expects(:send_query_request).returns(response)
+#
+#        @result = @ec2.reserved_instances_offering('60dcfab3-a56c-4092-8c90-3677e9da02b7')
+#      }
+#
+#      should "return a single reserved instance offering" do
+#        assert_equal Awsum::Ec2::ReservedInstancesOffering, @result.class
+#      end
+#    end
+#
+#    context "purchasing a single reserved instance offering by id" do
+#      setup {
+#        xml = load_fixture('ec2/purchase_reserved_instances_offering')
+#        response = stub('Http Response', :body => xml)
+#        @ec2.expects(:send_query_request).returns(response)
+#
+#        @result = @ec2.purchase_reserved_instances_offering('aaaaaaaa-bbbb-cccc-ddddddddddddddddd')
+#      }
+#
+#      should "return an array of reserved instances" do
+#        assert_equal Awsum::Ec2::ReservedInstancesOffering, @result.class
+#      end
+#    end
   end
 end

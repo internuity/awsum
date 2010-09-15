@@ -6,15 +6,15 @@
 # Licence:: MIT License (http://www.opensource.org/licenses/mit-license.php)
 #
 
-require 'parser'
-require 'requestable'
-require 'support'
+require 'awsum/parser'
+require 'awsum/requestable'
+require 'awsum/support'
 
-require 'ec2/ec2'
-require 's3/s3'
+require 'awsum/ec2'
+require 'awsum/s3'
 
 module Awsum
-  
+
   VERSION = "0.4"
 
   API_VERSION = '2009-03-01'

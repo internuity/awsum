@@ -1,13 +1,13 @@
-require 'ec2/address'
-require 'ec2/availability_zone'
-require 'ec2/image'
-require 'ec2/instance'
-require 'ec2/keypair'
-require 'ec2/region'
-require 'ec2/reserved_instances_offering'
-require 'ec2/security_group'
-require 'ec2/snapshot'
-require 'ec2/volume'
+require 'awsum/ec2/address'
+require 'awsum/ec2/availability_zone'
+require 'awsum/ec2/image'
+require 'awsum/ec2/instance'
+require 'awsum/ec2/keypair'
+require 'awsum/ec2/region'
+require 'awsum/ec2/reserved_instances_offering'
+require 'awsum/ec2/security_group'
+require 'awsum/ec2/snapshot'
+require 'awsum/ec2/volume'
 
 module Awsum
   # Handles all interaction with Amazon EC2
@@ -373,8 +373,12 @@ module Awsum
     end
 
     # List a Region
-    def region(region_name)
-      regions(region_name)[0]
+    def region(region_name, &block)
+      region = regions(region_name)[0]
+      if block_given?
+        block.call(region)
+      end
+      region
     end
 
     # List Addresses
@@ -477,7 +481,7 @@ module Awsum
       response = send_query_request(params)
       response.is_a?(Net::HTTPSuccess)
     end
-    
+
     # List KeyPair(s)
     def key_pairs(*key_names)
       action = 'DescribeKeyPairs'
@@ -495,7 +499,7 @@ module Awsum
     def key_pair(key_name)
       key_pairs(key_name)[0]
     end
-    
+
     # Create a new KeyPair
     def create_key_pair(key_name)
       action = 'CreateKeyPair'
@@ -508,7 +512,7 @@ module Awsum
       parser = Awsum::Ec2::KeyPairParser.new(self)
       parser.parse(response.body)[0]
     end
-    
+
     # Delete a KeyPair
     def delete_key_pair(key_name)
       action = 'DeleteKeyPair'
@@ -520,7 +524,7 @@ module Awsum
       response = send_query_request(params)
       response.is_a?(Net::HTTPSuccess)
     end
-    
+
     # List SecurityGroup(s)
     def security_groups(*group_names)
       action = 'DescribeSecurityGroups'
@@ -538,7 +542,7 @@ module Awsum
     def security_group(group_name)
       security_groups(group_name)[0]
     end
-    
+
     # Create a new SecurityGroup
     def create_security_group(name, description)
       action = 'CreateSecurityGroup'
@@ -551,7 +555,7 @@ module Awsum
       response = send_query_request(params)
       response.is_a?(Net::HTTPSuccess)
     end
-    
+
     # Delete a SecurityGroup
     def delete_security_group(group_name)
       action = 'DeleteSecurityGroup'
@@ -670,9 +674,38 @@ module Awsum
       parser.parse(response.body)
     end
 
+    # Get a single reserved instances offering by id
     def reserved_instances_offering(id)
       reserved_instances_offerings(:reserved_instances_offering_ids => id)[0]
     end
+
+#TODO: Complete this
+#   # Purchase reserved instances
+#   #
+#   def purchase_reserved_instances_offering(reserved_instances_offering_ids, instance_count = 1)
+#     action = 'PurchaseReservedInstancesOffering'
+#     params = {
+#       'Action'        => action,
+#       'InstanceCount' => instance_count
+#     }
+#     params.merge!(array_to_params(reserved_instances_offering_ids, 'ReservedInstancesOfferingId'))
+#
+#     response = send_query_request(params)
+#     parser = Awsum::Ec2::ReservedInstancesOfferingParser.new(self)
+#     parser.parse(response.body)
+#   end
+#
+#   def reserved_instances(reserved_instances_offering_ids = nil)
+#     action = 'DescribeReservedInstances'
+#     params = {
+#       'Action'        => action
+#     }
+#     params.merge!(array_to_params(reserved_instances_offering_ids, 'ReservedInstancesOfferingId')) if reserved_instances_offering_ids
+#
+#     response = send_query_request(params)
+#     parser = Awsum::Ec2::ReservedInstancesOfferingParser.new(self)
+#     parser.parse(response.body)
+#   end
 
 #private
     #The host to make all requests against

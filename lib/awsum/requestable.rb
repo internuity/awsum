@@ -1,13 +1,13 @@
 require 'base64'
 require 'cgi'
 require 'digest/md5'
-require 'error'
 require 'openssl'
 require 'time'
 require 'uri'
+require 'awsum/error'
 
 require 'net/https'
-require 'net_fix'
+require 'awsum/net_fix'
 
 module Awsum
   module Requestable #:nodoc:
@@ -27,9 +27,9 @@ module Awsum
       params = standard_options.merge(params)
 
       #Put parameters into query string format
-      params_string = params.delete_if{|k,v| v.nil?}.sort{|a,b| 
+      params_string = params.delete_if{|k,v| v.nil?}.sort{|a,b|
         a[0].to_s <=> b[0].to_s
-      }.collect{|key, val| 
+      }.collect{|key, val|
         "#{CGI::escape(key.to_s)}=#{CGI::escape(val.to_s)}"
       }.join('&')
       params_string.gsub!('+', '%20')

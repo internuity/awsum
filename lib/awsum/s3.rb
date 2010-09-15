@@ -1,6 +1,6 @@
-require 's3/bucket'
-require 's3/object'
-require 's3/headers'
+require 'awsum/s3/bucket'
+require 'awsum/s3/object'
+require 'awsum/s3/headers'
 
 module Awsum
   # Handles all interaction with Amazon S3
@@ -15,7 +15,7 @@ module Awsum
   #   images = ec2.my_images
   #   ...
   #
-  # All calls to EC2 can be done directly in this class, or through a more 
+  # All calls to EC2 can be done directly in this class, or through a more
   # object oriented way through the various returned classes
   #
   # ==Examples
@@ -37,7 +37,7 @@ module Awsum
   # All methods will raise an Awsum::Error if an error is returned from Amazon
   #
   # ==Missing Methods
-  # If you need any of this functionality, please consider getting involved 
+  # If you need any of this functionality, please consider getting involved
   # and help complete this library.
   class S3
     include Awsum::Requestable
@@ -46,7 +46,7 @@ module Awsum
     #
     # The access_key and secret_key are both required to do any meaningful work.
     #
-    # If you want to get these keys from environment variables, you can do that 
+    # If you want to get these keys from environment variables, you can do that
     # in your code as follows:
     #   s3 = Awsum::S3.new(ENV['AWS_ACCESS_KEY_ID'], ENV['AWS_SECRET_ACCESS_KEY'])
     def initialize(access_key = nil, secret_key = nil)
@@ -169,7 +169,7 @@ module Awsum
     end
 
     # Copy the contents of an Object to another key and/or bucket
-    # 
+    #
     # ===Parameters
     # * <tt>source_bucket_name</tt> - The name of the Bucket from which to copy
     # * <tt>source_key</tt> - The name of the Key from which to copy
