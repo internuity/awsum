@@ -16,7 +16,7 @@ allowing you to work with objects in a very natural way.
 
 ==Working with different Regions
 You can use blocks to wrap your calls for a specific Region
-  ec2.region('eu-west-1').use do
+  ec2.region('eu-west-1') do
     #Run an instance in the eu-west-1 region
     run_instance(...)
   end
