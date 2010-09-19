@@ -1,9 +1,11 @@
+require 'awsum'
 require 'awsum/ec2/address'
 require 'awsum/ec2/availability_zone'
 require 'awsum/ec2/image'
 require 'awsum/ec2/instance'
 require 'awsum/ec2/keypair'
 require 'awsum/ec2/region'
+require 'awsum/ec2/reserved_instance'
 require 'awsum/ec2/reserved_instances_offering'
 require 'awsum/ec2/security_group'
 require 'awsum/ec2/snapshot'
@@ -365,7 +367,7 @@ module Awsum
       params = {
         'Action' => action
       }
-      params.merge!(array_to_params(region_names, 'Region'))
+      params.merge!(array_to_params(region_names, 'RegionName'))
 
       response = send_query_request(params)
       parser = Awsum::Ec2::RegionParser.new(self)
@@ -376,9 +378,10 @@ module Awsum
     def region(region_name, &block)
       region = regions(region_name)[0]
       if block_given?
-        block.call(region)
+        region.use(&block)
+      else
+        region
       end
-      region
     end
 
     # List Addresses
@@ -451,6 +454,7 @@ module Awsum
     # Releases an associated Address
     #
     # <b>NOTE:</b> This is not a direct call to the Amazon web service. This is a safe operation that will first check to see if the address is allocated to an instance and fail if it is
+    # To ensure an address is released whether associated or not, use #release_address!
     def release_address(public_ip)
       address = address(public_ip)
 
@@ -679,33 +683,50 @@ module Awsum
       reserved_instances_offerings(:reserved_instances_offering_ids => id)[0]
     end
 
-#TODO: Complete this
-#   # Purchase reserved instances
-#   #
-#   def purchase_reserved_instances_offering(reserved_instances_offering_ids, instance_count = 1)
-#     action = 'PurchaseReservedInstancesOffering'
-#     params = {
-#       'Action'        => action,
-#       'InstanceCount' => instance_count
-#     }
-#     params.merge!(array_to_params(reserved_instances_offering_ids, 'ReservedInstancesOfferingId'))
-#
-#     response = send_query_request(params)
-#     parser = Awsum::Ec2::ReservedInstancesOfferingParser.new(self)
-#     parser.parse(response.body)
-#   end
-#
-#   def reserved_instances(reserved_instances_offering_ids = nil)
-#     action = 'DescribeReservedInstances'
-#     params = {
-#       'Action'        => action
-#     }
-#     params.merge!(array_to_params(reserved_instances_offering_ids, 'ReservedInstancesOfferingId')) if reserved_instances_offering_ids
-#
-#     response = send_query_request(params)
-#     parser = Awsum::Ec2::ReservedInstancesOfferingParser.new(self)
-#     parser.parse(response.body)
-#   end
+    # Purchase reserved instances
+    #
+    # ===Options:
+    # * <tt>:reserved_instances_offering_ids</tt> - A single reserved instance offering id (or an array of instance ids)
+    # * <tt>:instance_counts</tt> - A number of reserved instances to purchase (or an array of counts per instance in the reserved_instances_offering_ids array)
+    #
+    # ===Example
+    #  ec2.purchase_reserved_instances_offering('reservation-123456', 1)
+    #  or
+    #  ec2.purchase_reserved_instances_offering(['reservation-123456', 'reservation-654321'], [1, 2])
+    def purchase_reserved_instances_offering(reserved_instances_offering_ids, instance_counts = 1)
+      action = 'PurchaseReservedInstancesOffering'
+      params = {
+        'Action'        => action,
+      }
+      params.merge!(array_to_params([instance_counts].flatten, 'InstanceCount'))
+      params.merge!(array_to_params([reserved_instances_offering_ids].flatten, 'ReservedInstancesOfferingId'))
+
+      response = send_query_request(params)
+      parser = Awsum::Ec2::PurchaseReservedInstancesOfferingParser.new(self)
+      result = parser.parse(response.body)
+      if reserved_instances_offering_ids.is_a?(Array)
+        reserved_instances(*result)
+      else
+        reserved_instance(result)
+      end
+    end
+
+    def reserved_instances(*reserved_instances_ids)
+      action = 'DescribeReservedInstances'
+      params = {
+        'Action'        => action
+      }
+      params.merge!(array_to_params(reserved_instances_ids, 'ReservedInstanceId'))
+
+      response = send_query_request(params)
+      parser = Awsum::Ec2::ReservedInstanceParser.new(self)
+      parser.parse(response.body)
+    end
+
+    # Retrieve a single reserved instance by id
+    def reserved_instance(reserved_instance_id)
+      reserved_instances(reserved_instance_id)[0]
+    end
 
 #private
     #The host to make all requests against

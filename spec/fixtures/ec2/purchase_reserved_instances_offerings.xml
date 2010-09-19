@@ -1,0 +1,6 @@
+<?xml version="1.0"?>
+<PurchaseReservedInstancesOfferingResponse xmlns="http://ec2.amazonaws.com/doc/2009-03-01/">
+    <requestId>ddf45759-cb4a-4970-8944-49e711ceee4a</requestId>
+    <reservedInstancesId>1ba8e2e3-e6f7-4ef5-8c6c-6c6e4fad0a56</reservedInstancesId>
+    <reservedInstancesId>11111111-1111-1111-1111-111111111111</reservedInstancesId>
+</PurchaseReservedInstancesOfferingResponse>

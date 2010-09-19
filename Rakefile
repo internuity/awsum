@@ -62,26 +62,14 @@ task :clean do |t|
   FileUtils.rm_rf "pkg"
 end
 
-require 'rake/testtask'
-Rake::TestTask.new(:test) do |test|
-  test.libs << 'test'
-  test.ruby_opts << '-rubygems'
-  test.pattern = 'test/**/test_*.rb'
-  test.verbose = true
+require 'rspec/core/rake_task'
+RSpec::Core::RakeTask.new do |t|
+  t.pattern = "./spec/lib/**/*_spec.rb"
 end
 
-namespace :test do
-  Rake::TestTask.new(:units) do |test|
-    test.libs << 'test'
-    test.ruby_opts << '-rubygems'
-    test.pattern = 'test/unit/**/test_*.rb'
-    test.verbose = true
-  end
-
-  Rake::TestTask.new(:functionals) do |test|
-    test.libs << 'test'
-    test.ruby_opts << '-rubygems'
-    test.pattern = 'test/functional/**/test_*.rb'
-    test.verbose = true
+namespace :spec do
+  desc "Run RSpec integration code examples (LIVE runs against Amazon AWS)"
+  RSpec::Core::RakeTask.new(:integration) do |t|
+    t.pattern = "./spec/functional/**/*_spec.rb"
   end
 end

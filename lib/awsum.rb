@@ -10,14 +10,10 @@ require 'awsum/parser'
 require 'awsum/requestable'
 require 'awsum/support'
 
-require 'awsum/ec2'
-require 'awsum/s3'
-
 module Awsum
+  VERSION = "0.5"
 
-  VERSION = "0.4"
-
-  API_VERSION = '2009-03-01'
+  API_VERSION = '2010-06-15'
   SIGNATURE_VERSION = 2
 end
 

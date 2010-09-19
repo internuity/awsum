@@ -1,3 +1,5 @@
+require 'awsum/ec2/parsers/region_parser'
+
 module Awsum
   class Ec2
     class Region
@@ -11,85 +13,41 @@ module Awsum
 
       # List the AvailabilityZone(s) of this Region
       def availability_zones
-        @ec2.availability_zones
+        use do
+          @ec2.availability_zones
+        end
       end
 
       # Operate all Awsum::Ec2 methods against this Region
       #
       # ====Example
       #
-      #   ec2.region('eu-west-1').use do
-      #     #Runs an instance within the eu-west-1 region
-      #     instance = run_instances('i-ABCDEF')
+      #   ec2.region('eu-west-1').use
+      #   ec2.availability_zones #Will give you all the availability zones in the eu-west-1 region
+      #
+      #   Alternative:
+      #   ec2.region('eu-west-1') do |region|
+      #     region.availability_zones
       #   end
       def use(&block)
         old_host = @ec2.host
         @ec2.host = end_point
         if block_given?
           block.arity < 1 ? instance_eval(&block) : block[self]
+        else
+          self
         end
+      ensure
         @ec2.host = old_host
-        self
       end
 
     private
       #--
       # Will pass all missing methods onto the ec2 object
       def method_missing(method_name, *args, &block)
-        @ec2.send(method_name, *args, &block)
-      end
-    end
-
-    class RegionParser < Awsum::Parser #:nodoc:
-      def initialize(ec2)
-        @ec2 = ec2
-        @regions = []
-        @text = nil
-        @stack = []
-      end
-
-      def tag_start(tag, attributes)
-        case tag
-          when 'regionInfo'
-            @stack << 'regionInfo'
-          when 'item'
-            case @stack[-1]
-              when 'regionInfo'
-                @current = {}
-            end
+        use do
+          @ec2.send(method_name, *args, &block)
         end
-        @text = ''
-      end
-
-      def text(text)
-        @text << text unless @text.nil?
-      end
-
-      def tag_end(tag)
-        case tag
-          when 'DescribeRegionsResponse', 'requestId'
-            #no-op
-          when 'regionInfo'
-            @stack.pop
-          when 'item'
-            case @stack[-1]
-              when 'regionInfo'
-                @regions << Region.new(
-                                @ec2,
-                                @current['regionName'], 
-                                @current['regionEndpoint']
-                              )
-            end
-          else
-            unless @text.nil? || @current.nil?
-              text = @text.strip
-              @current[tag] = (text == '' ? nil : text)
-            end
-        end
-      end
-
-      def result
-        @regions
       end
     end
   end

@@ -1,3 +1,5 @@
+require 'awsum/ec2/parsers/address_parser'
+
 module Awsum
   class Ec2
     class Address
@@ -27,6 +29,11 @@ module Awsum
         end
       end
 
+      # Will associate this address with an instance (even if it is already associated with another instance)
+      def associate!(instance_id)
+        @ec2.associate_address instance_id, @public_ip
+      end
+
       # Will disassociate this address from it's instance
       #
       # Raises an error if the address is not associated with an instance
@@ -54,64 +61,6 @@ module Awsum
       # Will release this address regardless of whether it is associated with an instance or not.
       def release!
         @ec2.release_address! @public_ip
-      end
-    end
-
-    class AddressParser < Awsum::Parser #:nodoc:
-      def initialize(ec2)
-        @ec2 = ec2
-        @addresses = []
-        @text = nil
-        @stack = []
-      end
-
-      def tag_start(tag, attributes)
-        #Quick hack so we can use the same parser for AllocateAddress which doesn't use the item tag to wrap the address information
-        if tag == 'AllocateAddressResponse'
-          @stack << 'addressesSet'
-        end
-
-        case tag
-          when 'addressesSet'
-            @stack << 'addressesSet'
-          when 'item', 'AllocateAddressResponse'
-            case @stack[-1]
-              when 'addressesSet'
-                @current = {}
-            end
-        end
-        @text = ''
-      end
-
-      def text(text)
-        @text << text unless @text.nil?
-      end
-
-      def tag_end(tag)
-        case tag
-          when 'DescribeAddressesResponse'
-            #no-op
-          when 'addressesSet'
-            @stack.pop
-          when 'item', 'AllocateAddressResponse'
-            case @stack[-1]
-              when 'addressesSet'
-                @addresses << Address.new(
-                                @ec2,
-                                @current['publicIp'], 
-                                @current['instanceId']
-                              )
-            end
-          else
-            unless @text.nil? || @current.nil?
-              text = @text.strip
-              @current[tag] = (text == '' ? nil : text)
-            end
-        end
-      end
-
-      def result
-        @addresses
       end
     end
   end

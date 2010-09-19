@@ -1,3 +1,4 @@
+require 'awsum'
 require 'awsum/s3/bucket'
 require 'awsum/s3/object'
 require 'awsum/s3/headers'
