@@ -43,7 +43,7 @@ end
 desc 'Start an IRB session with all necessary files required.'
 task :shell do |t|
   chdir File.dirname(__FILE__)
-  exec 'irb -I lib/ -I lib/awsum -r rubygems -r awsum'
+  exec 'irb -I lib/ -r rubygems -r awsum/ec2 -r awsum/s3'
 end
 
 desc 'Generate documentation.'
@@ -64,12 +64,12 @@ end
 
 require 'rspec/core/rake_task'
 RSpec::Core::RakeTask.new do |t|
-  t.pattern = "./spec/lib/**/*_spec.rb"
+  t.pattern = "./spec/**/*_spec.rb"
 end
 
 namespace :spec do
   desc "Run RSpec integration code examples (LIVE runs against Amazon AWS)"
   RSpec::Core::RakeTask.new(:integration) do |t|
-    t.pattern = "./spec/functional/**/*_spec.rb"
+    t.pattern = "./functional/**/*_spec.rb"
   end
 end
