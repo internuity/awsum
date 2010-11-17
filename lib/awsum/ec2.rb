@@ -686,29 +686,22 @@ module Awsum
     # Purchase reserved instances
     #
     # ===Options:
-    # * <tt>:reserved_instances_offering_ids</tt> - A single reserved instance offering id (or an array of instance ids)
-    # * <tt>:instance_counts</tt> - A number of reserved instances to purchase (or an array of counts per instance in the reserved_instances_offering_ids array)
+    # * <tt>:reserved_instances_offering_id</tt> - A single reserved instance offering id
+    # * <tt>:instance_count</tt> - A number of reserved instances to purchase
     #
     # ===Example
     #  ec2.purchase_reserved_instances_offering('reservation-123456', 1)
-    #  or
-    #  ec2.purchase_reserved_instances_offering(['reservation-123456', 'reservation-654321'], [1, 2])
-    def purchase_reserved_instances_offering(reserved_instances_offering_ids, instance_counts = 1)
+    def purchase_reserved_instances_offering(reserved_instances_offering_id, instance_count = 1)
       action = 'PurchaseReservedInstancesOffering'
       params = {
         'Action'        => action,
       }
-      params.merge!(array_to_params([instance_counts].flatten, 'InstanceCount'))
-      params.merge!(array_to_params([reserved_instances_offering_ids].flatten, 'ReservedInstancesOfferingId'))
+      params['ReservedInstancesOfferingId'] = reserved_instances_offering_id
+      params['InstanceCount']               = instance_count
 
       response = send_query_request(params)
       parser = Awsum::Ec2::PurchaseReservedInstancesOfferingParser.new(self)
       result = parser.parse(response.body)
-      if reserved_instances_offering_ids.is_a?(Array)
-        reserved_instances(*result)
-      else
-        reserved_instance(result)
-      end
     end
 
     def reserved_instances(*reserved_instances_ids)

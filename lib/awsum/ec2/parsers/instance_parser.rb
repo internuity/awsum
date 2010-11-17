@@ -20,6 +20,10 @@ module Awsum
             @stack << 'productCodes'
           when 'instanceState'
             @stack << 'instanceState'
+          when 'blockDeviceMapping'
+            @stack << 'blockDeviceMapping'
+          when 'tagSet'
+            @stack << 'tagSet'
           when 'placement'
             @stack << 'placement'
           when 'item'
@@ -30,6 +34,10 @@ module Awsum
                 @state = {}
               when 'productCodes'
                 @product_codes = []
+              when 'blockDeviceMapping'
+                @blockDeviceMapping = {}
+              when 'tagSet'
+                @tagSet = {}
             end
         end
         @text = ''
@@ -43,7 +51,7 @@ module Awsum
         case tag
           when 'DescribeInstancesResponse', 'requestId', 'reservationId'
             #no-op
-          when 'reservationSet', 'instancesSet', 'productCodes', 'instanceState', 'placement'
+          when 'reservationSet', 'instancesSet', 'productCodes', 'instanceState', 'placement', 'blockDeviceMapping', 'tagSet'
             @stack.pop
           when 'item'
             case @stack[-1]
@@ -75,9 +83,22 @@ module Awsum
           when 'name'
             @state[:name] = @text.strip if @stack[-1] == 'instanceState'
           else
-            unless @text.nil? || @current.nil?
-              text = @text.strip
-              @current[tag] = (text == '' ? nil : text)
+            case @stack[-1]
+              when 'blockDeviceMapping'
+                unless @text.nil? || @blockDeviceMapping.nil?
+                  text = @text.strip
+                  @blockDeviceMapping[tag] = (text == '' ? nil : text)
+                end
+              when 'tagSet'
+                unless @text.nil? || @blockDeviceMapping.nil?
+                  text = @text.strip
+                  @blockDeviceMapping[tag] = (text == '' ? nil : text)
+                end
+              else
+                unless @text.nil? || @current.nil?
+                  text = @text.strip
+                  @current[tag] = (text == '' ? nil : text)
+                end
             end
         end
       end

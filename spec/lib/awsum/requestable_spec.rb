@@ -20,7 +20,7 @@ module Awsum
 
       describe "#send_query_request" do
         it "should generate the correct request uri" do
-          FakeWeb.register_uri(:get, 'https://test.amazonaws.com/?AWSAccessKeyId=ABCDEF&Action=DescribeImages&ImageId.1=ami-1234567&SignatureMethod=HmacSHA256&SignatureVersion=2&Timestamp=2009-01-23T03%3A34%3A38.000Z&Version=2010-06-15&Signature=ZkjqlJRngvT4sITa50ZODqeYn%2FMBBDNtFhFf6ucz7QI%3D', :body => '', :status => 200)
+          FakeWeb.register_uri(:get, 'https://test.amazonaws.com/?AWSAccessKeyId=ABCDEF&Action=DescribeImages&ImageId.1=ami-1234567&SignatureMethod=HmacSHA256&SignatureVersion=2&Timestamp=2009-01-23T03%3A34%3A38.000Z&Version=2010-08-31&Signature=y5cfq8sS%2FinWuP5q2%2B8fs%2BDxfQx4dA%2F54fyNnL3LIkU%3D', :body => '', :status => 200)
 
           subject.send(:send_query_request, {'Action' => 'DescribeImages', 'ImageId.1' => 'ami-1234567', 'Timestamp' => '2009-01-23T03:34:38.000Z'})
         end

@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<PurchaseReservedInstancesOfferingResponse xmlns="http://ec2.amazonaws.com/doc/2010-08-31/">
+    <requestId>c9f3d2f8-cb9d-467f-9a4d-b3a682ad2460</requestId>
+    <reservedInstancesId>4357912c-baae-4f49-80bc-61fcb17c97d9</reservedInstancesId>
+</PurchaseReservedInstancesOfferingResponse>
