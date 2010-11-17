@@ -30,6 +30,30 @@ module Awsum
       end
     end
 
+    describe "retrieving a list of instances with a filter" do
+      before do
+        FakeWeb.register_uri(:get, %r|https://ec2\.amazonaws\.com/?.*Action=DescribeInstances.*Filter.1.Name=architecture.*Filter.1.Value.1=i386|, :body => fixture('ec2/run_instances'), :status => 200)
+      end
+
+      let(:result) { ec2.instances(:filter => {:architecture => 'i386'}) }
+
+      it "should return an array of instances" do
+        result.first.should be_a(Awsum::Ec2::Instance)
+      end
+    end
+
+    describe "retrieving a list of instances by tag" do
+      before do
+        FakeWeb.register_uri(:get, %r|https://ec2\.amazonaws\.com/?.*Action=DescribeInstances.*Filter.1.Name=tag%3Aname.*Filter.1.Value.1=Test|, :body => fixture('ec2/run_instances'), :status => 200)
+      end
+
+      let(:result) { ec2.instances(:tags => {:name => 'Test'}) }
+
+      it "should return an array of instances" do
+        result.first.should be_a(Awsum::Ec2::Instance)
+      end
+    end
+
     describe "retrieving a single instance" do
       before do
         FakeWeb.register_uri(:get, %r|https://ec2\.amazonaws\.com/?.*Action=DescribeInstances.*InstanceId.1=i-3f1cc856|, :body => fixture('ec2/instance'), :status => 200)

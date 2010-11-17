@@ -50,6 +50,16 @@ module Awsum
         @ec2.delete_volume id
       end
 
+      # Force delete this volume
+      # will detach it first
+      def delete!
+        detach true
+        while status != 'available'
+          reload
+        end
+        @ec2.delete_volume id
+      end
+
       # Creates a Snapshot of this Volume
       def create_snapshot
         @ec2.create_snapshot id

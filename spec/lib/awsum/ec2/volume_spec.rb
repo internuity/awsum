@@ -30,6 +30,30 @@ module Awsum
       end
     end
 
+    describe "retrieving a list of volumes with a filter" do
+      before do
+        FakeWeb.register_uri(:get, %r|https://ec2\.amazonaws\.com/?.*Action=DescribeVolumes.*Filter.1.Name=attachment.status.*Filter.1.Value.1=attached|, :body => fixture('ec2/volumes'), :status => 200)
+      end
+
+      let(:result) { ec2.volumes(:filter => {'attachment.status' => 'attached'}) }
+
+      it "should return an array of volumes" do
+        result.first.should be_a(Awsum::Ec2::Volume)
+      end
+    end
+
+    describe "retrieving a list of volumes by tag" do
+      before do
+        FakeWeb.register_uri(:get, %r|https://ec2\.amazonaws\.com/?.*Action=DescribeVolumes.*Filter.1.Name=tag%3Aname.*Filter.1.Value.1=Test|, :body => fixture('ec2/volumes'), :status => 200)
+      end
+
+      let(:result) { ec2.volumes(:tags => {:name=> 'Test'}) }
+
+      it "should return an array of volumes" do
+        result.first.should be_a(Awsum::Ec2::Volume)
+      end
+    end
+
     describe "retrieving a volume by id" do
       before do
         FakeWeb.register_uri(:get, %r|https://ec2\.amazonaws\.com/?.*Action=DescribeVolumes.*VolumeId.1=vol-44d6322d|, :body => fixture('ec2/volumes'), :status => 200)
@@ -89,6 +113,15 @@ module Awsum
         FakeWeb.register_uri(:get, %r|https://ec2\.amazonaws\.com/?.*Action=DeleteVolume.*VolumeId=vol-44d6322d|, :body => fixture('ec2/delete_volume'), :status => 200)
 
         volume.delete.should be_true
+      end
+
+      it "should be able to force delete itself" do
+        FakeWeb.register_uri(:get, %r|https://ec2\.amazonaws\.com/?.*Action=DetachVolume.*Force=true.*VolumeId=vol-44d6322d|, :body => fixture('ec2/detach_volume'), :status => 200)
+        FakeWeb.register_uri(:get, %r|https://ec2\.amazonaws\.com/?.*Action=DeleteVolume.*VolumeId=vol-44d6322d|, :body => fixture('ec2/delete_volume'), :status => 200)
+
+        volume.should_receive(:status).and_return('available')
+
+        volume.delete!.should be_true
       end
 
       it "should be able to create a snapshot of itself" do

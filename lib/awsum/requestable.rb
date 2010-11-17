@@ -220,6 +220,27 @@ module Awsum
       string.to_s.split(/_/).map{ |w| w.downcase.sub(/^(.)/){ $1.upcase } }.join
     end
 
+    def parse_filters(filters, tags)
+      result = []
+      if filters
+        filters.each do |k,v|
+          values = v.is_a?(Array) ? v : [v]
+          result << {:name => k, :value => values}
+        end
+      end
+      if tags
+        tags.each do |k,v|
+          values = v.is_a?(Array) ? v : [v]
+          result << {:name => "tag:#{k}", :value => values}
+        end
+      end
+      if result.size > 0
+        array_to_params(result, "Filter")
+      else
+        {}
+      end
+    end
+
     # Sign a string with a digest, wrap in HMAC digest and base64 encode
     #
     # ===Returns

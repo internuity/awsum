@@ -69,6 +69,8 @@ module Awsum
     # * <tt>:image_ids</tt> - array of Image id's, default: []
     # * <tt>:owners</tt> - array of owner id's, default: []
     # * <tt>:executable_by</tt> - array of user id's who have executable permission, default: []
+    # * <tt>:filter</tt> - hash of filters (e.g. :filter => {:architecture => 'i386'})
+    # * <tt>:tags</tt> - hash of tags (e.g. :tags => {:name => 'Test'})
     def images(options = {})
       options = {:image_ids => [], :owners => [], :executable_by => []}.merge(options)
       action = 'DescribeImages'
@@ -79,20 +81,7 @@ module Awsum
       params.merge!(array_to_params(options[:image_ids], "ImageId"))
       params.merge!(array_to_params(options[:owners], "Owner"))
       params.merge!(array_to_params(options[:executable_by], "ExecutableBy"))
-      filters = []
-      if options[:filter]
-        options[:filter].each do |k,v|
-          values = v.is_a?(Array) ? v : [v]
-          filters << {:name => k, :value => values}
-        end
-      end
-      if options[:tags]
-        options[:tags].each do |k,v|
-          values = v.is_a?(Array) ? v : [v]
-          filters << {:name => "tag:#{k}", :value => values}
-        end
-      end
-      params.merge!(array_to_params(filters, "Filter")) if filters.size > 0
+      params.merge!(parse_filters(options[:filter], options[:tags]))
 
       response = send_query_request(params)
       parser = Awsum::Ec2::ImageParser.new(self)
@@ -180,12 +169,18 @@ module Awsum
     alias_method :launch_instances, :run_instances
 
     #Retrieve the information on a number of Instance(s)
+    #
+    # ===Options:
+    # * <tt>:filter</tt> - hash of filters (e.g. :filter => {:architecture => 'i386'})
+    # * <tt>:tags</tt> - hash of tags (e.g. :tags => {:name => 'Test'})
     def instances(*instance_ids)
+      options = instance_ids[-1].respond_to?(:keys) ? instance_ids.pop : {}
       action = 'DescribeInstances'
       params = {
         'Action' => action
       }
       params.merge!(array_to_params(instance_ids, 'InstanceId'))
+      params.merge!(parse_filters(options[:filter], options[:tags]))
 
       response = send_query_request(params)
       parser = Awsum::Ec2::InstanceParser.new(self)
@@ -235,12 +230,18 @@ module Awsum
     end
 
     #Retrieve the information on a number of Volume(s)
+    #
+    # ===Options:
+    # * <tt>:filter</tt> - hash of filters (e.g. :filter => {'attachment.status' => 'attached'})
+    # * <tt>:tags</tt> - hash of tags (e.g. :tags => {:name => 'Test'})
     def volumes(*volume_ids)
+      options = volume_ids[-1].respond_to?(:keys) ? volume_ids.pop : {}
       action = 'DescribeVolumes'
       params = {
         'Action' => action
       }
       params.merge!(array_to_params(volume_ids, 'VolumeId'))
+      params.merge!(parse_filters(options[:filter], options[:tags]))
 
       response = send_query_request(params)
       parser = Awsum::Ec2::VolumeParser.new(self)

@@ -3,7 +3,6 @@ require 'awsum/ec2'
 require 'awsum/s3'
 
 def functional(description, &block)
-  FakeWeb.allow_net_connect = true
   describe "Functional: #{description}" do
     let(:keys) do
       rc_file = File.join(File.expand_path('~'), '.awsumrc')
@@ -17,6 +16,17 @@ def functional(description, &block)
     let(:secret_key) { keys['secret_key'] }
 
     instance_eval(&block)
+
+    after(:all) do
+      ec2.instances(:filter => {'instance-state-name' => ['running', 'stopped']}).each do |instance|
+        instance.terminate
+        wait_for instance, 'terminated'
+      end
+
+      ec2.volumes(:filter => {'status' => ['available', 'in-use']}).each do |volume|
+        volume.delete!
+      end
+    end
   end
 end
 
@@ -27,7 +37,7 @@ end
 
 def wait_for(object, state = 'available')
   print "waiting for #{state} on #{object.class}(#{object.id}) "
-  while object.state != state
+  while (object.respond_to?(:state) ? object.state : object.status) != state
     sleep 1
     object.reload
     print '.'
