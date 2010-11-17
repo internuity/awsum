@@ -23,6 +23,24 @@ module Awsum
         @launch_index = launch_index
       end
 
+      def reload
+        replacement_instance = @ec2.instance id
+        #TODO: Make this easier
+        @image_id = replacement_instance.image_id
+        @type = replacement_instance.type
+        @state = replacement_instance.state
+        @dns_name = replacement_instance.dns_name
+        @private_dns_name = replacement_instance.private_dns_name
+        @key_name = replacement_instance.key_name
+        @kernel_id = replacement_instance.kernel_id
+        @launch_time = replacement_instance.launch_time
+        @availability_zone = replacement_instance.availability_zone
+        @product_codes = replacement_instance.product_codes
+        @ramdisk_id = replacement_instance.ramdisk_id
+        @reason = replacement_instance.reason
+        @launch_index = replacement_instance.launch_index
+      end
+
       # Terminates this instance
       def terminate
         @ec2.terminate_instances(id)

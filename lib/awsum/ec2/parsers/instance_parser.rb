@@ -61,7 +61,7 @@ module Awsum
                                 @current['instanceId'],
                                 @current['imageId'],
                                 @current['instanceType'],
-                                @state,
+                                State.new(@state[:code], @state[:name]),
                                 @current['dnsName'],
                                 @current['privateDnsName'],
                                 @current['keyName'],

@@ -9,6 +9,7 @@ require 'awsum/ec2/reserved_instance'
 require 'awsum/ec2/reserved_instances_offering'
 require 'awsum/ec2/security_group'
 require 'awsum/ec2/snapshot'
+require 'awsum/ec2/state'
 require 'awsum/ec2/volume'
 
 module Awsum
@@ -78,6 +79,20 @@ module Awsum
       params.merge!(array_to_params(options[:image_ids], "ImageId"))
       params.merge!(array_to_params(options[:owners], "Owner"))
       params.merge!(array_to_params(options[:executable_by], "ExecutableBy"))
+      filters = []
+      if options[:filter]
+        options[:filter].each do |k,v|
+          values = v.is_a?(Array) ? v : [v]
+          filters << {:name => k, :value => values}
+        end
+      end
+      if options[:tags]
+        options[:tags].each do |k,v|
+          values = v.is_a?(Array) ? v : [v]
+          filters << {:name => "tag:#{k}", :value => values}
+        end
+      end
+      params.merge!(array_to_params(filters, "Filter")) if filters.size > 0
 
       response = send_query_request(params)
       parser = Awsum::Ec2::ImageParser.new(self)
@@ -85,8 +100,8 @@ module Awsum
     end
 
     # Retrieve all Image(s) owned by you
-    def my_images
-      images :owners => 'self'
+    def my_images(options = {})
+      images options.merge(:owners => 'self')
     end
 
     # Retrieve a single Image

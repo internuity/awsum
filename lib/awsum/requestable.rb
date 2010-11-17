@@ -197,12 +197,27 @@ module Awsum
 
     # Converts an array of paramters into <param_name>.<num> format
     def array_to_params(arr, param_name)
-      arr = [arr] unless arr.is_a?(Array)
+      arr = [arr].flatten
       params = {}
-      arr.each_with_index do |value,i|
-        params["#{param_name}.#{i+1}"] = value
+      arr.each_with_index do |value, i|
+        if value.respond_to?(:keys)
+          value.each do |key, val|
+            param_key = "#{param_name}.#{i+1}.#{parameterize(key)}"
+            if val.is_a?(Array) || val.respond_to?(:keys)
+              params.merge! array_to_params(val, param_key)
+            else
+              params[param_key] = val
+            end
+          end
+        else
+          params["#{param_name}.#{i+1}"] = value
+        end
       end
       params
+    end
+
+    def parameterize(string)
+      string.to_s.split(/_/).map{ |w| w.downcase.sub(/^(.)/){ $1.upcase } }.join
     end
 
     # Sign a string with a digest, wrap in HMAC digest and base64 encode

@@ -48,7 +48,7 @@ module Awsum
       # * <tt>:key_name</tt> - The name of the key pair with which to launch instances
       # * <tt>:security_groups</tt> - The names of security groups to associate launched instances with
       # * <tt>:user_data</tt> - User data made available to instances (Note: Must be 16K or less, will be base64 encoded by Awsum)
-      # * <tt>:instance_type</tt> - The size of the instances to launch, can be one of [m1.small, m1.large, m1.xlarge, c1.medium, c1.xlarge], default is m1.small
+      # * <tt>:instance_type</tt> - The size of the instances to launch, can be one of [m1.small, m1.large, m1.xlarge, c1.medium, c1.xlarge, m2.xlarge, m2.2xlarge, m2.4xlarge, cc1.4xlarge, cg1.4xlarge, t1.micro], default is m1.small
       # * <tt>:availability_zone</tt> - The name of the availability zone to launch this instance in
       # * <tt>:kernel_id</tt> - The ID of the kernel with which to launch instances
       # * <tt>:ramdisk_id</tt> - The ID of the RAM disk with which to launch instances

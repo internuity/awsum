@@ -10,8 +10,8 @@ module Awsum
 
       def tag_start(tag, attributes)
         case tag
-          when 'imagesSet'
-            @stack << 'imagesSet'
+          when 'imagesSet', 'blockDeviceMapping', 'productCodes'
+            @stack << tag
           when 'item'
             case @stack[-1]
               when 'imagesSet'
@@ -21,8 +21,6 @@ module Awsum
                 @product_codes = []
                 @text = ''
             end
-          when 'productCodes'
-            @stack << 'productCodes'
         end
       end
 
@@ -34,7 +32,7 @@ module Awsum
         case tag
           when 'DescribeImagesResponse', 'requestId'
             #no-op
-          when 'imagesSet', 'productCodes'
+          when 'imagesSet', 'productCodes', 'blockDeviceMapping'
             @stack.pop
           when 'item'
             case @stack[-1]

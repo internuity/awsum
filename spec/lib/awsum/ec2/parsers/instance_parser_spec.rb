@@ -24,7 +24,7 @@ module Awsum
         :type               => 'm1.small',
         :availability_zone  => 'us-east-1b',
         :launch_time        => Time.parse('2008-06-18T12:51:52.000Z'),
-        :state              => {:code => 0, :name => 'pending'}
+        :state              => Ec2::State.new(0, 'pending')
       }.each do |key, value|
         it "should have the correct #{key}" do
           instance.send(key).should == value
@@ -36,7 +36,8 @@ module Awsum
       let(:instance) { result[1] }
 
       it "should have the correct state" do
-        instance.state.should == {:code => 16, :name => 'running'}
+        instance.state.should == 16
+        instance.state.should == 'running'
       end
     end
   end
@@ -64,7 +65,7 @@ module Awsum
         :type               => 'm1.small',
         :availability_zone  => 'us-east-1b',
         :launch_time        => Time.parse('2009-01-11T13:09:01.000Z'),
-        :state              => {:code => 0, :name => 'pending'}
+        :state              => Ec2::State.new(0, 'pending')
       }.each do |key, value|
         it "should have the correct #{key}" do
           instance.send(key).should == value

@@ -3,3 +3,4 @@ doc
 coverage
 .bundle/
 pkg/
+test_response.xml
