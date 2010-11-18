@@ -21,6 +21,15 @@ functional "Instances" do
     end
     wait_for volume, 'in-use'
 
+    snapshot = run "taking a snapshot of volume #{volume.id}" do
+      volume.create_snapshot
+    end
+    wait_for snapshot, 'completed'
+
+    run "deleting snapshot #{snapshot.id}" do
+      snapshot.delete
+    end
+
     run "detaching volue #{volume.id}" do
       volume.detach
     end

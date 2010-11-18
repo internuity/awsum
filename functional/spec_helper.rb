@@ -18,14 +18,14 @@ def functional(description, &block)
     instance_eval(&block)
 
     after(:all) do
-      ec2.instances(:filter => {'instance-state-name' => ['running', 'stopped']}).each do |instance|
-        instance.terminate
-        wait_for instance, 'terminated'
-      end
+      #ec2.instances(:filter => {'instance-state-name' => ['running', 'stopped']}).each do |instance|
+      #  instance.terminate
+      #  wait_for instance, 'terminated'
+      #end
 
-      ec2.volumes(:filter => {'status' => ['available', 'in-use']}).each do |volume|
-        volume.delete!
-      end
+      #ec2.volumes(:filter => {'status' => ['available', 'in-use']}).each do |volume|
+      #  volume.delete!
+      #end
     end
   end
 end

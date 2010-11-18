@@ -18,6 +18,15 @@ module Awsum
       def delete
         @ec2.delete_snapshot id
       end
+
+      def reload
+        reloaded_snapshot = @ec2.snapshot id
+
+        @volume_id = reloaded_snapshot.volume_id
+        @status = reloaded_snapshot.status
+        @start_time = reloaded_snapshot.start_time
+        @progress = reloaded_snapshot.progress
+      end
     end
   end
 end
