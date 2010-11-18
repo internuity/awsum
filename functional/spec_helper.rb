@@ -41,7 +41,7 @@ def functional(description, &block)
         end
       end
 
-      ec2.snapshots(:filter => {'status' => ['available', 'in-use']},
+      ec2.snapshots(:filter => {'status' => ['pending', 'completed']},
                   :tags => {'Name' => 'awsum.test'}).each do |snapshot|
         begin
           snapshot.delete
