@@ -10,14 +10,14 @@ functional "Instances" do
     end
 
     instance = run "launching an instance of #{image.id}" do
-      instances = image.run :instance_type => 't1.micro'
+      instances = image.run :instance_type => 't1.micro', :tags => {'Name' => 'awsum.test'}
       instances[0]
     end
 
     wait_for instance, 'running'
 
     volume = run "attaching a volume to instance #{instance.id}" do
-      instance.create_volume(5)
+      instance.create_volume(5, :device => '/dev/sdh', :tags => {'Name' => 'awsum.test'})
     end
     wait_for volume, 'in-use'
 

@@ -220,7 +220,7 @@ module Awsum
       string.to_s.split(/_/).map{ |w| w.downcase.sub(/^(.)/){ $1.upcase } }.join
     end
 
-    def parse_filters(filters, tags)
+    def parse_filters(filters, tags = nil)
       result = []
       if filters
         filters.each do |k,v|
@@ -236,6 +236,20 @@ module Awsum
       end
       if result.size > 0
         array_to_params(result, "Filter")
+      else
+        {}
+      end
+    end
+
+    def parse_tag_keys(tags)
+      result = []
+      if tags
+        tags.each do |k,v|
+          result << {:key => k, :value => v}
+        end
+      end
+      if result.size > 0
+        array_to_params(result, "Tag")
       else
         {}
       end

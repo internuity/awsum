@@ -18,6 +18,20 @@ module Awsum
       end
     end
 
+    describe "creating a volume with a tag" do
+      before do
+        FakeWeb.register_uri(:get, %r|https://ec2\.amazonaws\.com/?.*Action=CreateVolume.*AvailabilityZone=us-east-1b.*Size=10|, :body => fixture('ec2/create_volume'), :status => 200)
+
+        ec2.should_receive(:create_tags).with('vol-44d6322d', :name => 'Test')
+      end
+
+      let(:result) { ec2.create_volume 'us-east-1b', :size => 10, :tags => {:name => 'Test'} }
+
+      it "should return a volume" do
+        result.should be_a(Awsum::Ec2::Volume)
+      end
+    end
+
     describe "retrieving a list of volumes" do
       before do
         FakeWeb.register_uri(:get, %r|https://ec2\.amazonaws\.com/?.*Action=DescribeVolumes|, :body => fixture('ec2/volumes'), :status => 200)

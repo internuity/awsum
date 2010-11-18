@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<DescribeTagsResponse xmlns="http://ec2.amazonaws.com/doc/2010-08-31/">
+    <requestId>ba2577eb-3227-46b7-b80c-df1353c320d1</requestId>
+    <tagSet>
+        <item>
+            <resourceId>ari-f9c22690</resourceId>
+            <resourceType>image</resourceType>
+            <key>name</key>
+            <value>Test</value>
+        </item>
+    </tagSet>
+</DescribeTagsResponse>

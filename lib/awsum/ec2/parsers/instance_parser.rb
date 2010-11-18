@@ -12,20 +12,8 @@ module Awsum
 
       def tag_start(tag, attributes)
         case tag
-          when 'reservationSet'
-            @stack << 'reservationSet'
-          when 'instancesSet'
-            @stack << 'instancesSet'
-          when 'productCodes'
-            @stack << 'productCodes'
-          when 'instanceState'
-            @stack << 'instanceState'
-          when 'blockDeviceMapping'
-            @stack << 'blockDeviceMapping'
-          when 'tagSet'
-            @stack << 'tagSet'
-          when 'placement'
-            @stack << 'placement'
+          when 'reservationSet', 'instancesSet', 'productCodes', 'instanceState', 'blockDeviceMapping', 'tagSet', 'placement'
+            @stack << tag
           when 'item'
             case @stack[-1]
               when 'reservationSet'

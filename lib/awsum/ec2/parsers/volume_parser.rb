@@ -15,10 +15,8 @@ module Awsum
         end
 
         case tag
-          when 'volumeSet'
-            @stack << 'volumeSet'
-          when 'attachmentSet'
-            @stack << 'attachmentSet'
+          when 'volumeSet', 'attachmentSet', 'tagSet'
+            @stack << tag
           when 'item', 'CreateVolumeResponse'
             case @stack[-1]
               when 'volumeSet'
@@ -37,7 +35,7 @@ module Awsum
         case tag
           when 'DescribeVolumesResponse'
             #no-op
-          when 'volumeSet', 'attachmentSet'
+          when 'volumeSet', 'attachmentSet', 'tagSet'
             @stack.pop
           when 'item', 'CreateVolumeResponse'
             case @stack[-1]

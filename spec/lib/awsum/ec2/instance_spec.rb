@@ -18,6 +18,20 @@ module Awsum
       end
     end
 
+    describe "running an instance with a tag" do
+      before do
+        FakeWeb.register_uri(:get, %r|https://ec2\.amazonaws\.com/?.*Action=RunInstances.*ImageId=ari-f9c22690|, :body => fixture('ec2/run_instances'), :status => 200)
+
+        ec2.should_receive(:create_tags).with(['i-f92fa890'], :name => 'Test')
+      end
+
+      let(:result) { ec2.run_instances 'ari-f9c22690', :tags => {:name => 'Test'} }
+
+      it "should return an array of instances" do
+        result.first.should be_a(Awsum::Ec2::Instance)
+      end
+    end
+
     describe "retrieving a list of instances" do
       before do
         FakeWeb.register_uri(:get, %r|https://ec2\.amazonaws\.com/?.*Action=DescribeInstances|, :body => fixture('ec2/run_instances'), :status => 200)
@@ -114,7 +128,7 @@ module Awsum
 
         FakeWeb.register_uri(:get, %r|https://ec2\.amazonaws\.com/?.*Action=AttachVolume.*InstanceId=i-3f1cc856.*VolumeId=vol-44d6322d|, :body => fixture('ec2/attach_volume'), :status => 200)
 
-        instance.create_volume(10)
+        instance.create_volume(10, :device => '/dev/sdh')
       end
     end
 

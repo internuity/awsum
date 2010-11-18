@@ -10,6 +10,7 @@ require 'awsum/ec2/reserved_instances_offering'
 require 'awsum/ec2/security_group'
 require 'awsum/ec2/snapshot'
 require 'awsum/ec2/state'
+require 'awsum/ec2/tag'
 require 'awsum/ec2/volume'
 
 module Awsum
@@ -164,7 +165,11 @@ module Awsum
 
       response = send_query_request(params)
       parser = Awsum::Ec2::InstanceParser.new(self)
-      parser.parse(response.body)
+      instances = parser.parse(response.body)
+      if options[:tags]
+        create_tags instances.map{|i| i.id}, options[:tags]
+      end
+      instances
     end
     alias_method :launch_instances, :run_instances
 
@@ -229,6 +234,30 @@ module Awsum
       response.is_a?(Net::HTTPSuccess)
     end
 
+    def tags(filter = {})
+      action = 'DescribeTags'
+      params = {
+        'Action' => action
+      }
+      params.merge!(parse_filters(filter))
+
+      response = send_query_request(params)
+      parser = Awsum::Ec2::TagParser.new(self)
+      parser.parse(response.body)
+    end
+
+    def create_tags(resource_ids, tags)
+      action = 'CreateTags'
+      params = {
+        'Action' => action
+      }
+      params.merge!(array_to_params(resource_ids, 'ResourceId'))
+      params.merge!(parse_tag_keys(tags))
+
+      response = send_query_request(params)
+      response.is_a?(Net::HTTPSuccess)
+    end
+
     #Retrieve the information on a number of Volume(s)
     #
     # ===Options:
@@ -272,7 +301,11 @@ module Awsum
 
       response = send_query_request(params)
       parser = Awsum::Ec2::VolumeParser.new(self)
-      parser.parse(response.body)[0]
+      volume = parser.parse(response.body)[0]
+      if options[:tags]
+        create_tags volume.id, options[:tags]
+      end
+      volume
     end
 
     # Attach a volume to an instance

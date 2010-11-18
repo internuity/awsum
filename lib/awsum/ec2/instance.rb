@@ -54,15 +54,26 @@ module Awsum
 
       # Will create and attach a Volume to this Instance
       # You must specify a size or a snapshot_id
-      def create_volume(size = nil, snapshot_id = nil, device = '/dev/sdh')
-        raise ArgumentError.new('You must specify a size if not creating a volume from a snapshot') if size.blank? && snapshot_id.blank?
-        raise ArgumentError.new('You must specify a device to attach the volume to') unless device
-
-        volume = @ec2.create_volume availability_zone, :size => size, :snapshot_id => snapshot_id
+      #
+      # ===Options:
+      # :tags => Hash of tags
+      # :device => Will automatically attach the volume to the specified device
+      def create_volume(size_or_snapshot_id, options = {})
+        options = {:device => '/dev/sdh'}.merge(options)
+        if size_or_snapshot_id.is_a?(Numeric)
+          volume = @ec2.create_volume availability_zone, :size => size_or_snapshot_id
+        else
+          volume = @ec2.create_volume availability_zone, :snapshot_id => size_or_snapshot_id
+        end
+        if options[:tags]
+          @ec2.create_tags(volume.id, options[:tags])
+        end
         while volume.status != 'available'
           volume.reload
         end
-        attach volume, device
+        if options[:device]
+          attach volume, options[:device]
+        end
         volume
       end
 
