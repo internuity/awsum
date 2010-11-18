@@ -1,5 +1,5 @@
-<?xml version="1.0"?>
-<DeleteSecurityGroupResponse xmlns="http://ec2.amazonaws.com/doc/2008-12-01/">
-    <requestId>0de0677e-dc68-40f8-bdf9-bc7063ee4a70</requestId>
+<?xml version="1.0" encoding="UTF-8"?>
+<DeleteSecurityGroupResponse xmlns="http://ec2.amazonaws.com/doc/2010-08-31/">
+    <requestId>37eaab54-074d-466d-a38e-0137d221c72d</requestId>
     <return>true</return>
 </DeleteSecurityGroupResponse>

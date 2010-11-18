@@ -51,90 +51,156 @@ module Awsum
     end
 
     describe "authorizing group access" do
-      before do
-        FakeWeb.register_uri(:get, %r|https://ec2\.amazonaws\.com/?.*Action=AuthorizeSecurityGroupIngress.*GroupName=test.*SourceSecurityGroupName=default.*SourceSecurityGroupOwnerId=111111111111|, :body => fixture('ec2/delete_security_group'), :status => 200)
+      context "with a single option hash" do
+        before do
+          FakeWeb.register_uri(:get, %r|https://ec2\.amazonaws\.com/?.*Action=AuthorizeSecurityGroupIngress.*GroupName=test.*IpPermissions.1.FromPort=80.*IpPermissions.1.Groups.1.GroupName=webservers.*IpPermissions.1.IpProtocol=tcp.*IpPermissions.1.ToPort=80|, :body => fixture('ec2/authorize_group_access'), :status => 200)
+        end
+
+        it "should return true" do
+          ec2.authorize_security_group_ingress('test', {:ip_protocol => :tcp, :from_port => 80, :to_port => 80, :groups => [{:group_name => :webservers}]}).should be_true
+        end
       end
 
-      it "should return true" do
-        ec2.authorize_security_group_ingress('test', :source_security_group_name => 'default', :source_security_group_owner_id => '111111111111').should be_true
+      context "with an array of option hashes" do
+        before do
+          FakeWeb.register_uri(:get, %r|https://ec2\.amazonaws\.com/?.*Action=AuthorizeSecurityGroupIngress.*GroupName=test.*IpPermissions.1.FromPort=80.*IpPermissions.1.Groups.1.GroupName=webservers.*IpPermissions.1.IpProtocol=tcp.*IpPermissions.1.ToPort=80.*IpPermissions.2.FromPort=22.*IpPermissions.2.Groups.1.GroupName=webservers.*IpPermissions.2.Groups.2.GroupName=dbservers.*IpPermissions.2.IpProtocol=tcp.*IpPermissions.2.ToPort=22|, :body => fixture('ec2/authorize_group_access'), :status => 200)
+        end
+
+        it "should return true" do
+          ec2.authorize_security_group_ingress('test', [
+            {:ip_protocol => :tcp, :from_port => 80, :to_port => 80, :groups => [{:group_name => :webservers}]},
+            {:ip_protocol => :tcp, :from_port => 22, :to_port => 22, :groups => [{:group_name => :webservers}, {:group_name => :dbservers}]}
+          ]).should be_true
+        end
       end
     end
 
     describe "authorizing ip access" do
-      before do
-        FakeWeb.register_uri(:get, %r|https://ec2\.amazonaws\.com/?.*Action=AuthorizeSecurityGroupIngress.*CidrIp=0.0.0.0%2F0.*FromPort=80.*GroupName=test.*IpProtocol=tcp.*ToPort=80|, :body => fixture('ec2/delete_security_group'), :status => 200)
+      context "with a single option hash" do
+        before do
+          FakeWeb.register_uri(:get, %r|https://ec2\.amazonaws\.com/?.*Action=AuthorizeSecurityGroupIngress.*GroupName=test.*IpPermissions.1.FromPort=80.*IpPermissions.1.IpProtocol=tcp.*IpPermissions.1.IpRanges.1.CidrIp=12.23.34.45%2F0.*IpPermissions.1.ToPort=80|, :body => fixture('ec2/authorize_group_access'), :status => 200)
+        end
+
+        it "should return true" do
+          ec2.authorize_security_group_ingress('test', [{:ip_protocol => :tcp, :from_port => 80, :to_port => 80, :ip_ranges => [{:cidr_ip => '12.23.34.45/0'}]}])
+        end
       end
 
-      it "should return true" do
-        ec2.authorize_security_group_ingress('test', :ip_protocol => 'tcp', :from_port => 80, :to_port => 80, :cidr_ip => '0.0.0.0/0').should be_true
+      context "with an array of option hashes" do
+        before do
+          FakeWeb.register_uri(:get, %r|https://ec2\.amazonaws\.com/?.*Action=AuthorizeSecurityGroupIngress.*GroupName=test.*IpPermissions.1.FromPort=80.*IpPermissions.1.IpProtocol=tcp.*IpPermissions.1.IpRanges.1.CidrIp=12.23.34.45%2F0.*IpPermissions.1.ToPort=80.*IpPermissions.2.FromPort=22.*IpPermissions.2.IpProtocol=tcp.*IpPermissions.2.IpRanges.1.CidrIp=12.23.34.45%2F0.*IpPermissions.2.IpRanges.2.CidrIp=12.34.56.78%2F0.*IpPermissions.2.ToPort=22|, :body => fixture('ec2/authorize_group_access'), :status => 200)
+        end
+
+        it "should return true" do
+          ec2.authorize_security_group_ingress('test', [
+            {:ip_protocol => :tcp, :from_port => 80, :to_port => 80, :ip_ranges => [{:cidr_ip => '12.23.34.45/0'}]},
+            {:ip_protocol => :tcp, :from_port => 22, :to_port => 22, :ip_ranges => [{:cidr_ip => '12.23.34.45/0'}, {:cidr_ip => '12.34.56.78/0'}]}
+          ])
+        end
       end
     end
 
-    describe "sending ip authorization options to a user/group authorization request" do
-      it "should raise an error" do
-        expect { ec2.authorize_security_group_ingress('test', :ip_protocol => 'tcp', :from_port => 80, :to_port => 80, :cidr_ip => '0.0.0.0/0', :source_security_group_name => 'default') }.to raise_error
+    describe "authorizing both group and ip access" do
+      context "with a single call" do
+        before do
+          FakeWeb.register_uri(:get, %r|https://ec2\.amazonaws\.com/?.*Action=AuthorizeSecurityGroupIngress.*GroupName=test.*IpPermissions.1.FromPort=80.*IpPermissions.1.IpProtocol=tcp.*IpPermissions.1.IpRanges.1.CidrIp=12.23.34.45%2F0.*IpPermissions.1.ToPort=80.*IpPermissions.2.FromPort=22.*IpPermissions.2.Groups.1.GroupName=webservers.*IpPermissions.2.IpProtocol=tcp.*IpPermissions.2.ToPort=22|, :body => fixture('ec2/authorize_group_access'), :status => 200)
+        end
+
+        it "should return true" do
+          ec2.authorize_security_group_ingress('test', [
+            {:ip_protocol => :tcp, :from_port => 80, :to_port => 80, :ip_ranges => [{:cidr_ip => '12.23.34.45/0'}]},
+            {:ip_protocol => :tcp, :from_port => 22, :to_port => 22, :groups => [{:group_name => 'webservers'}]}
+          ])
+        end
       end
     end
 
-    describe "sending user/group options to a ip authorization request" do
-      it "should raise an error" do
-        expect { ec2.authorize_security_group_ingress('test', :source_security_group_name => 'default', :source_security_group_owner_id => '111111111111', :from_port => 80, :to_port => 80) }.to raise_error
+    describe "revoking group access" do
+      context "with a single option hash" do
+        before do
+          FakeWeb.register_uri(:get, %r|https://ec2\.amazonaws\.com/?.*Action=RevokeSecurityGroupIngress.*GroupName=test.*IpPermissions.1.FromPort=80.*IpPermissions.1.Groups.1.GroupName=webservers.*IpPermissions.1.IpProtocol=tcp.*IpPermissions.1.ToPort=80|, :body => fixture('ec2/authorize_group_access'), :status => 200)
+        end
+
+        it "should return true" do
+          ec2.revoke_security_group_ingress('test', {:ip_protocol => :tcp, :from_port => 80, :to_port => 80, :groups => [{:group_name => :webservers}]}).should be_true
+        end
+      end
+
+      context "with an array of option hashes" do
+        before do
+          FakeWeb.register_uri(:get, %r|https://ec2\.amazonaws\.com/?.*Action=RevokeSecurityGroupIngress.*GroupName=test.*IpPermissions.1.FromPort=80.*IpPermissions.1.Groups.1.GroupName=webservers.*IpPermissions.1.IpProtocol=tcp.*IpPermissions.1.ToPort=80.*IpPermissions.2.FromPort=22.*IpPermissions.2.Groups.1.GroupName=webservers.*IpPermissions.2.Groups.2.GroupName=dbservers.*IpPermissions.2.IpProtocol=tcp.*IpPermissions.2.ToPort=22|, :body => fixture('ec2/authorize_group_access'), :status => 200)
+        end
+
+        it "should return true" do
+          ec2.revoke_security_group_ingress('test', [
+            {:ip_protocol => :tcp, :from_port => 80, :to_port => 80, :groups => [{:group_name => :webservers}]},
+            {:ip_protocol => :tcp, :from_port => 22, :to_port => 22, :groups => [{:group_name => :webservers}, {:group_name => :dbservers}]}
+          ]).should be_true
+        end
       end
     end
 
-    describe "sending all options to an authorization request" do
+    describe "revoking ip access" do
+      context "with a single option hash" do
+        before do
+          FakeWeb.register_uri(:get, %r|https://ec2\.amazonaws\.com/?.*Action=RevokeSecurityGroupIngress.*GroupName=test.*IpPermissions.1.FromPort=80.*IpPermissions.1.IpProtocol=tcp.*IpPermissions.1.IpRanges.1.CidrIp=12.23.34.45%2F0.*IpPermissions.1.ToPort=80|, :body => fixture('ec2/authorize_group_access'), :status => 200)
+        end
+
+        it "should return true" do
+          ec2.revoke_security_group_ingress('test', [{:ip_protocol => :tcp, :from_port => 80, :to_port => 80, :ip_ranges => [{:cidr_ip => '12.23.34.45/0'}]}])
+        end
+      end
+
+      context "with an array of option hashes" do
+        before do
+          FakeWeb.register_uri(:get, %r|https://ec2\.amazonaws\.com/?.*Action=RevokeSecurityGroupIngress.*GroupName=test.*IpPermissions.1.FromPort=80.*IpPermissions.1.IpProtocol=tcp.*IpPermissions.1.IpRanges.1.CidrIp=12.23.34.45%2F0.*IpPermissions.1.ToPort=80.*IpPermissions.2.FromPort=22.*IpPermissions.2.IpProtocol=tcp.*IpPermissions.2.IpRanges.1.CidrIp=12.23.34.45%2F0.*IpPermissions.2.IpRanges.2.CidrIp=12.34.56.78%2F0.*IpPermissions.2.ToPort=22|, :body => fixture('ec2/authorize_group_access'), :status => 200)
+        end
+
+        it "should return true" do
+          ec2.revoke_security_group_ingress('test', [
+            {:ip_protocol => :tcp, :from_port => 80, :to_port => 80, :ip_ranges => [{:cidr_ip => '12.23.34.45/0'}]},
+            {:ip_protocol => :tcp, :from_port => 22, :to_port => 22, :ip_ranges => [{:cidr_ip => '12.23.34.45/0'}, {:cidr_ip => '12.34.56.78/0'}]}
+          ])
+        end
+      end
+    end
+
+    describe "revoking both group and ip access" do
+      context "with a single call" do
+        before do
+          FakeWeb.register_uri(:get, %r|https://ec2\.amazonaws\.com/?.*Action=RevokeSecurityGroupIngress.*GroupName=test.*IpPermissions.1.FromPort=80.*IpPermissions.1.IpProtocol=tcp.*IpPermissions.1.IpRanges.1.CidrIp=12.23.34.45%2F0.*IpPermissions.1.ToPort=80.*IpPermissions.2.FromPort=22.*IpPermissions.2.Groups.1.GroupName=webservers.*IpPermissions.2.IpProtocol=tcp.*IpPermissions.2.ToPort=22|, :body => fixture('ec2/authorize_group_access'), :status => 200)
+        end
+
+        it "should return true" do
+          ec2.revoke_security_group_ingress('test', [
+            {:ip_protocol => :tcp, :from_port => 80, :to_port => 80, :ip_ranges => [{:cidr_ip => '12.23.34.45/0'}]},
+            {:ip_protocol => :tcp, :from_port => 22, :to_port => 22, :groups => [{:group_name => 'webservers'}]}
+          ])
+        end
+      end
+    end
+
+    describe "sending both ip and user/group options to an authorization request" do
       it "should raise an error" do
-        expect { ec2.authorize_security_group_ingress('test', :source_security_group_name => 'default', :source_security_group_owner_id => '111111111111', :ip_protocol => 'tcp', :from_port => 80, :to_port => 80, :cidr_ip => '0.0.0.0/0') }.to raise_error
+        expect { ec2.authorize_security_group_ingress('test', [{:ip_protocol => :tcp, :from_port => 80, :to_port => 80, :ip_ranges => [{:cidr_ip => '12.23.34.45/0'}], :groups => [{:group_name => :webservers}]}]) }.to raise_error(ArgumentError)
       end
     end
 
     describe "including a wrong protocol in an authorization request" do
       it "should raise an error" do
-        expect { ec2.authorize_security_group_ingress('test', :ip_protocol => 'test', :from_port => 80, :to_port => 80, :cidr_ip => '0.0.0.0/0') }.to raise_error
+        expect { ec2.authorize_security_group_ingress('test', [{:ip_protocol => :test, :from_port => 80, :to_port => 80, :ip_ranges => [{:cidr_ip => '12.23.34.45/0'}]}]) }.to raise_error(ArgumentError)
       end
     end
 
-    describe "revoking group access" do
-      before do
-        FakeWeb.register_uri(:get, %r|https://ec2\.amazonaws\.com/?.*Action=RevokeSecurityGroupIngress.*GroupName=test.*SourceSecurityGroupName=default.*SourceSecurityGroupOwnerId=111111111111|, :body => fixture('ec2/delete_security_group'), :status => 200)
-      end
-
-      it "should return true" do
-        ec2.revoke_security_group_ingress('test', :source_security_group_name => 'default', :source_security_group_owner_id => '111111111111').should be_true
-      end
-    end
-
-    describe "revoking ip access" do
-      before do
-        FakeWeb.register_uri(:get, %r|https://ec2\.amazonaws\.com/?.*Action=RevokeSecurityGroupIngress.*CidrIp=0.0.0.0%2F0.*FromPort=80.*GroupName=test.*IpProtocol=tcp.*ToPort=80|, :body => fixture('ec2/delete_security_group'), :status => 200)
-      end
-
-      it "should return true" do
-        ec2.revoke_security_group_ingress('test', :ip_protocol => 'tcp', :from_port => 80, :to_port => 80, :cidr_ip => '0.0.0.0/0').should be_true
-      end
-    end
-
-    describe "sending ip revokation options to a user/group authorization request" do
+    describe "sending both ip and user/group options to a revokation request" do
       it "should raise an error" do
-        expect { ec2.revoke_security_group_ingress('test', :ip_protocol => 'tcp', :from_port => 80, :to_port => 80, :cidr_ip => '0.0.0.0/0', :source_security_group_name => 'default') }.to raise_error
+        expect { ec2.authorize_security_group_ingress('test', [{:ip_protocol => :tcp, :from_port => 80, :to_port => 80, :ip_ranges => [{:cidr_ip => '12.23.34.45/0'}], :groups => [{:group_name => :webservers}]}]) }.to raise_error(ArgumentError)
       end
     end
 
-    describe "sending user/group options to a ip revokation request" do
+    describe "including a wrong protocol in a revokation request" do
       it "should raise an error" do
-        expect { ec2.revoke_security_group_ingress('test', :source_security_group_name => 'default', :source_security_group_owner_id => '111111111111', :from_port => 80, :to_port => 80) }.to raise_error
-      end
-    end
-
-    describe "sending all options to an revokation request" do
-      it "should raise an error" do
-        expect { ec2.revoke_security_group_ingress('test', :source_security_group_name => 'default', :source_security_group_owner_id => '111111111111', :ip_protocol => 'tcp', :from_port => 80, :to_port => 80, :cidr_ip => '0.0.0.0/0') }.to raise_error
-      end
-    end
-
-    describe "including a wrong protocol in an revokation request" do
-      it "should raise an error" do
-        expect { ec2.revoke_security_group_ingress('test', :ip_protocol => 'test', :from_port => 80, :to_port => 80, :cidr_ip => '0.0.0.0/0') }.to raise_error
+        expect { ec2.authorize_security_group_ingress('test', [{:ip_protocol => :test, :from_port => 80, :to_port => 80, :ip_ranges => [{:cidr_ip => '12.23.34.45/0'}]}]) }.to raise_error(ArgumentError)
       end
     end
 
@@ -146,27 +212,33 @@ module Awsum
       let(:security_group) { ec2.security_group('default') }
 
       it "should be able to authorize a group" do
-        FakeWeb.register_uri(:get, %r|https://ec2\.amazonaws\.com/?.*Action=AuthorizeSecurityGroupIngress.*GroupName=default.*SourceSecurityGroupName=test.*SourceSecurityGroupOwnerId=111111111111|, :body => fixture('ec2/delete_security_group'), :status => 200)
+        FakeWeb.register_uri(:get, %r|https://ec2\.amazonaws\.com/?.*Action=AuthorizeSecurityGroupIngress.*GroupName=default.*IpPermissions.1.FromPort=80.*IpPermissions.1.Groups.1.GroupName=webservers.*IpPermissions.1.IpProtocol=tcp.*IpPermissions.1.ToPort=80|, :body => fixture('ec2/authorize_group_access'), :status => 200)
 
-        security_group.authorize_group('test', '111111111111').should be_true
+        security_group.authorize({:ip_protocol => :tcp, :from_port => 80, :to_port => 80, :groups => [{:group_name => :webservers}]}).should be_true
       end
 
       it "should be able to authorize ip access" do
-        FakeWeb.register_uri(:get, %r|https://ec2\.amazonaws\.com/?.*Action=AuthorizeSecurityGroupIngress.*CidrIp=0.0.0.0%2F0.*FromPort=80.*GroupName=default.*IpProtocol=tcp.*ToPort=80|, :body => fixture('ec2/delete_security_group'), :status => 200)
+        FakeWeb.register_uri(:get, %r|https://ec2\.amazonaws\.com/?.*Action=AuthorizeSecurityGroupIngress.*GroupName=default.*IpPermissions.1.FromPort=80.*IpPermissions.1.IpProtocol=tcp.*IpPermissions.1.IpRanges.1.CidrIp=12.23.34.45%2F0.*IpPermissions.1.ToPort=80.*IpPermissions.2.FromPort=22.*IpPermissions.2.IpProtocol=tcp.*IpPermissions.2.IpRanges.1.CidrIp=12.23.34.45%2F0.*IpPermissions.2.IpRanges.2.CidrIp=12.34.56.78%2F0.*IpPermissions.2.ToPort=22|, :body => fixture('ec2/authorize_group_access'), :status => 200)
 
-        security_group.authorize_ip(80, 80, 'tcp', '0.0.0.0/0').should be_true
+        security_group.authorize([
+          {:ip_protocol => :tcp, :from_port => 80, :to_port => 80, :ip_ranges => [{:cidr_ip => '12.23.34.45/0'}]},
+          {:ip_protocol => :tcp, :from_port => 22, :to_port => 22, :ip_ranges => [{:cidr_ip => '12.23.34.45/0'}, {:cidr_ip => '12.34.56.78/0'}]}
+        ])
       end
 
       it "should be able to revoke a group" do
-        FakeWeb.register_uri(:get, %r|https://ec2\.amazonaws\.com/?.*Action=RevokeSecurityGroupIngress.*GroupName=default.*SourceSecurityGroupName=test.*SourceSecurityGroupOwnerId=111111111111|, :body => fixture('ec2/delete_security_group'), :status => 200)
+        FakeWeb.register_uri(:get, %r|https://ec2\.amazonaws\.com/?.*Action=RevokeSecurityGroupIngress.*GroupName=default.*IpPermissions.1.FromPort=80.*IpPermissions.1.Groups.1.GroupName=webservers.*IpPermissions.1.IpProtocol=tcp.*IpPermissions.1.ToPort=80.*IpPermissions.2.FromPort=22.*IpPermissions.2.Groups.1.GroupName=webservers.*IpPermissions.2.Groups.2.GroupName=dbservers.*IpPermissions.2.IpProtocol=tcp.*IpPermissions.2.ToPort=22|, :body => fixture('ec2/authorize_group_access'), :status => 200)
 
-        security_group.revoke_group('test', '111111111111').should be_true
+        security_group.revoke([
+          {:ip_protocol => :tcp, :from_port => 80, :to_port => 80, :groups => [{:group_name => :webservers}]},
+          {:ip_protocol => :tcp, :from_port => 22, :to_port => 22, :groups => [{:group_name => :webservers}, {:group_name => :dbservers}]}
+        ]).should be_true
       end
 
-      it "should be able to authorize ip access" do
-        FakeWeb.register_uri(:get, %r|https://ec2\.amazonaws\.com/?.*Action=RevokeSecurityGroupIngress.*CidrIp=0.0.0.0%2F0.*FromPort=80.*GroupName=default.*IpProtocol=tcp.*ToPort=80|, :body => fixture('ec2/delete_security_group'), :status => 200)
+      it "should be able to revoke ip access" do
+        FakeWeb.register_uri(:get, %r|https://ec2\.amazonaws\.com/?.*Action=RevokeSecurityGroupIngress.*GroupName=default.*IpPermissions.1.FromPort=80.*IpPermissions.1.IpProtocol=tcp.*IpPermissions.1.IpRanges.1.CidrIp=12.23.34.45%2F0.*IpPermissions.1.ToPort=80|, :body => fixture('ec2/authorize_group_access'), :status => 200)
 
-        security_group.revoke_ip(80, 80, 'tcp', '0.0.0.0/0').should be_true
+        security_group.revoke([{:ip_protocol => :tcp, :from_port => 80, :to_port => 80, :ip_ranges => [{:cidr_ip => '12.23.34.45/0'}]}])
       end
 
       it "should be able to delete itself" do

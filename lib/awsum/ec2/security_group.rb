@@ -14,24 +14,20 @@ module Awsum
         @group_permissions = group_permissions
       end
 
-      # Authorize access for a group
-      def authorize_group(group_name, owner_id)
-        @ec2.authorize_security_group_ingress(@name, :source_security_group_name => group_name, :source_security_group_owner_id => owner_id)
+      # Authorize access
+      #
+      # ===Options:
+      # See Ec2#authorize_security_group_ingress
+      def authorize(arguments)
+        @ec2.authorize_security_group_ingress(@name, arguments)
       end
 
-      # Revoke access for a group
-      def revoke_group(group_name, owner_id)
-        @ec2.revoke_security_group_ingress(@name, :source_security_group_name => group_name, :source_security_group_owner_id => owner_id)
-      end
-
-      # Authorize access for an ip address
-      def authorize_ip(from_port, to_port, protocol = 'tcp', cidr_ip = '0.0.0.0/0')
-        @ec2.authorize_security_group_ingress(@name, :ip_protocol => protocol, :from_port => from_port, :to_port => to_port, :cidr_ip => cidr_ip)
-      end
-
-      # Revoke access from an ip address
-      def revoke_ip(from_port, to_port, protocol = 'tcp', cidr_ip = '0.0.0.0/0')
-        @ec2.revoke_security_group_ingress(@name, :ip_protocol => protocol, :from_port => from_port, :to_port => to_port, :cidr_ip => cidr_ip)
+      # Revoke access
+      #
+      # ===Options:
+      # See Ec2#revoke_security_group_ingress
+      def revoke(arguments)
+        @ec2.revoke_security_group_ingress(@name, arguments)
       end
 
       # Delete this SecurityGroup

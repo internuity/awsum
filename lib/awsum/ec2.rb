@@ -634,39 +634,21 @@ module Awsum
 
     # Authorize access on a specific security group
     #
-    # ===Options:
+    # ===Usage
     # ====User/Group access
-    # * <tt>:source_security_group_name</tt> - Name of the security group to authorize access to when operating on a user/group pair
-    # * <tt>:source_security_group_owner_id</tt> - Owner of the security group to authorize access to when operating on a user/group pair
+    # ec2.authorize_security_group_ingress('security_group', {:ip_protocol => :tcp, :from_port => 80, :to_port => 80, :groups => [{:group_name => :authorized_group}]})
     # ====CIDR IP access
-    # * <tt>:ip_protocol</tt> - IP protocol to authorize access to when operating on a CIDR IP (tcp, udp or icmp) (default: tcp)
-    # * <tt>:from_port</tt> - Bottom of port range to authorize access to when operating on a CIDR IP. This contains the ICMP type if ICMP is being authorized.
-    # * <tt>:to_port</tt> - Top of port range to authorize access to when operating on a CIDR IP. This contains the ICMP type if ICMP is being authorized.
-    # * <tt>:cidr_ip</tt> - CIDR IP range to authorize access to when operating on a CIDR IP. (default: 0.0.0.0/0)
-    def authorize_security_group_ingress(group_name, options = {})
-      got_at_least_one_user_group_option = !options[:source_security_group_name].nil? || !options[:source_security_group_owner_id].nil?
-      got_user_group_options = !options[:source_security_group_name].nil? && !options[:source_security_group_owner_id].nil?
-      got_at_least_one_cidr_option = !options[:ip_protocol].nil? || !options[:from_port].nil? || !options[:to_port].nil? || !options[:cidr_ip].nil?
-      #Add in defaults
-      options = {:cidr_ip => '0.0.0.0/0'}.merge(options) if got_at_least_one_cidr_option
-      options = {:ip_protocol => 'tcp'}.merge(options) if got_at_least_one_cidr_option
-      got_cidr_options = !options[:ip_protocol].nil? && !options[:from_port].nil? && !options[:to_port].nil? && !options[:cidr_ip].nil?
-      raise ArgumentError.new('Can only authorize user/group or CIDR IP, not both') if got_at_least_one_user_group_option && got_at_least_one_cidr_option
-      raise ArgumentError.new('Need all user/group options when authorizing user/group access') if got_at_least_one_user_group_option && !got_user_group_options
-      raise ArgumentError.new('Need all CIDR IP options when authorizing CIDR IP access') if got_at_least_one_cidr_option && !got_cidr_options
-      raise ArgumentError.new('ip_protocol can only be one of tcp, udp or icmp') if got_at_least_one_cidr_option && !%w(tcp udp icmp).detect{|p| p == options[:ip_protocol] }
+    # ec2.authorize_security_group_ingress('security_group', {:ip_protocol => :tcp, :from_port => 80, :to_port => 80, :ip_ranges => [{:cidr_ip => '0.0.0.0/0'}]})
+    def authorize_security_group_ingress(group_name, arguments)
+      raise ArgumentError.new('Can only authorize user/group or CIDR IP, not both') if [arguments].flatten.detect{|a| a.has_key?(:ip_ranges) && a.has_key?(:groups)}
+      raise ArgumentError.new('ip_protocol can only be one of tcp, udp or icmp') if [arguments].flatten.detect{|a| !%w(tcp udp icmp).detect{|p| p == a[:ip_protocol].to_s } }
 
       action = 'AuthorizeSecurityGroupIngress'
       params = {
         'Action'    => action,
         'GroupName' => group_name
       }
-      params['SourceSecurityGroupName'] = options[:source_security_group_name] unless options[:source_security_group_name].nil?
-      params['SourceSecurityGroupOwnerId'] = options[:source_security_group_owner_id] unless options[:source_security_group_owner_id].nil?
-      params['IpProtocol'] = options[:ip_protocol] unless options[:ip_protocol].nil?
-      params['FromPort'] = options[:from_port] unless options[:from_port].nil?
-      params['ToPort'] = options[:to_port] unless options[:to_port].nil?
-      params['CidrIp'] = options[:cidr_ip] unless options[:cidr_ip].nil?
+      params.merge!(array_to_params(arguments, 'IpPermissions'))
 
       response = send_query_request(params)
       response.is_a?(Net::HTTPSuccess)
@@ -674,39 +656,21 @@ module Awsum
 
     # Revoke access on a specific SecurityGroup
     #
-    # ===Options:
+    # ===Usage
     # ====User/Group access
-    # * <tt>:source_security_group_name</tt> - Name of the security group to authorize access to when operating on a user/group pair
-    # * <tt>:source_security_group_owner_id</tt> - Owner of the security group to authorize access to when operating on a user/group pair
+    # ec2.revoke_security_group_ingress('security_group', {:ip_protocol => :tcp, :from_port => 80, :to_port => 80, :groups => [{:group_name => :revoked_group}]})
     # ====CIDR IP access
-    # * <tt>:ip_protocol</tt> - IP protocol to authorize access to when operating on a CIDR IP (tcp, udp or icmp) (default: tcp)
-    # * <tt>:from_port</tt> - Bottom of port range to authorize access to when operating on a CIDR IP. This contains the ICMP type if ICMP is being authorized.
-    # * <tt>:to_port</tt> - Top of port range to authorize access to when operating on a CIDR IP. This contains the ICMP type if ICMP is being authorized.
-    # * <tt>:cidr_ip</tt> - CIDR IP range to authorize access to when operating on a CIDR IP. (default: 0.0.0.0/0)
-    def revoke_security_group_ingress(group_name, options = {})
-      got_at_least_one_user_group_option = !options[:source_security_group_name].nil? || !options[:source_security_group_owner_id].nil?
-      got_user_group_options = !options[:source_security_group_name].nil? && !options[:source_security_group_owner_id].nil?
-      got_at_least_one_cidr_option = !options[:ip_protocol].nil? || !options[:from_port].nil? || !options[:to_port].nil? || !options[:cidr_ip].nil?
-      #Add in defaults
-      options = {:cidr_ip => '0.0.0.0/0'}.merge(options) if got_at_least_one_cidr_option
-      options = {:ip_protocol => 'tcp'}.merge(options) if got_at_least_one_cidr_option
-      got_cidr_options = !options[:ip_protocol].nil? && !options[:from_port].nil? && !options[:to_port].nil? && !options[:cidr_ip].nil?
-      raise ArgumentError.new('Can only authorize user/group or CIDR IP, not both') if got_at_least_one_user_group_option && got_at_least_one_cidr_option
-      raise ArgumentError.new('Need all user/group options when revoking user/group access') if got_at_least_one_user_group_option && !got_user_group_options
-      raise ArgumentError.new('Need all CIDR IP options when revoking CIDR IP access') if got_at_least_one_cidr_option && !got_cidr_options
-      raise ArgumentError.new('ip_protocol can only be one of tcp, udp or icmp') if got_at_least_one_cidr_option && !%w(tcp udp icmp).detect{|p| p == options[:ip_protocol] }
+    # ec2.revoke_security_group_ingress('security_group', {:ip_protocol => :tcp, :from_port => 80, :to_port => 80, :ip_ranges => [{:cidr_ip => '0.0.0.0/0'}]})
+    def revoke_security_group_ingress(group_name, arguments)
+      raise ArgumentError.new('Can only authorize user/group or CIDR IP, not both') if [arguments].flatten.detect{|a| a.has_key?(:ip_ranges) && a.has_key?(:groups)}
+      raise ArgumentError.new('ip_protocol can only be one of tcp, udp or icmp') if [arguments].flatten.detect{|a| !%w(tcp udp icmp).detect{|p| p == a[:ip_protocol].to_s } }
 
       action = 'RevokeSecurityGroupIngress'
       params = {
         'Action'    => action,
         'GroupName' => group_name
       }
-      params['SourceSecurityGroupName'] = options[:source_security_group_name] unless options[:source_security_group_name].nil?
-      params['SourceSecurityGroupOwnerId'] = options[:source_security_group_owner_id] unless options[:source_security_group_owner_id].nil?
-      params['IpProtocol'] = options[:ip_protocol] unless options[:ip_protocol].nil?
-      params['FromPort'] = options[:from_port] unless options[:from_port].nil?
-      params['ToPort'] = options[:to_port] unless options[:to_port].nil?
-      params['CidrIp'] = options[:cidr_ip] unless options[:cidr_ip].nil?
+      params.merge!(array_to_params(arguments, 'IpPermissions'))
 
       response = send_query_request(params)
       response.is_a?(Net::HTTPSuccess)

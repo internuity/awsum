@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<DescribeSecurityGroupsResponse xmlns="http://ec2.amazonaws.com/doc/2010-08-31/">
+    <requestId>26e2d0ad-6af4-40ff-bd0b-b7f7a4a26036</requestId>
+    <securityGroupInfo>
+        <item>
+            <ownerId>026338013131</ownerId>
+            <groupName>test-group</groupName>
+            <groupDescription>A test group</groupDescription>
+            <ipPermissions/>
+        </item>
+    </securityGroupInfo>
+</DescribeSecurityGroupsResponse>
