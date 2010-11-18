@@ -166,7 +166,7 @@ module Awsum
       response = send_query_request(params)
       parser = Awsum::Ec2::InstanceParser.new(self)
       instances = parser.parse(response.body)
-      if options[:tags]
+      if options[:tags] && options[:tags].size > 0
         create_tags instances.map{|i| i.id}, options[:tags]
       end
       instances
@@ -302,7 +302,7 @@ module Awsum
       response = send_query_request(params)
       parser = Awsum::Ec2::VolumeParser.new(self)
       volume = parser.parse(response.body)[0]
-      if options[:tags]
+      if options[:tags] && options[:tags].size > 0
         create_tags volume.id, options[:tags]
       end
       volume
@@ -355,25 +355,36 @@ module Awsum
     end
 
     # Create a Snapshot of a Volume
-    def create_snapshot(volume_id)
+    #
+    # ===Options:
+    # :description => A description for the stapshot
+    # :tags => A hash of tags to be associated with the snapshot
+    def create_snapshot(volume_id, options = {})
       action = 'CreateSnapshot'
       params = {
         'Action'   => action,
         'VolumeId' => volume_id
       }
+      params['Description'] = options[:description] unless options[:description].blank?
 
       response = send_query_request(params)
       parser = Awsum::Ec2::SnapshotParser.new(self)
-      parser.parse(response.body)[0]
+      snapshot = parser.parse(response.body)[0]
+      if options[:tags] && options[:tags].size > 0
+        create_tags snapshot.id, options[:tags]
+      end
+      snapshot
     end
 
     # List Snapshot(s)
     def snapshots(*snapshot_ids)
+      options = snapshot_ids[-1].respond_to?(:keys) ? snapshot_ids.pop : {}
       action = 'DescribeSnapshots'
       params = {
         'Action' => action
       }
       params.merge!(array_to_params(snapshot_ids, 'SnapshotId'))
+      params.merge!(parse_filters(options[:filter], options[:tags]))
 
       response = send_query_request(params)
       parser = Awsum::Ec2::SnapshotParser.new(self)

@@ -8,10 +8,24 @@ module Awsum
 
     describe "creating a snapshot" do
       before do
-        FakeWeb.register_uri(:get, %r|https://ec2\.amazonaws\.com/?.*Action=CreateSnapshot.*VolumeId=vol-44d6322d|, :body => fixture('ec2/create_snapshot'), :status => 200)
+        FakeWeb.register_uri(:get, %r|https://ec2\.amazonaws\.com/?.*Action=CreateSnapshot.*Description=Test%20snapshot.*VolumeId=vol-44d6322d|, :body => fixture('ec2/create_snapshot'), :status => 200)
       end
 
-      let(:result) { ec2.create_snapshot 'vol-44d6322d' }
+      let(:result) { ec2.create_snapshot 'vol-44d6322d', :description => 'Test snapshot' }
+
+      it "should return a snapshot" do
+        result.should be_a(Awsum::Ec2::Snapshot)
+      end
+    end
+
+    describe "creating a snapshot with tags" do
+      before do
+        FakeWeb.register_uri(:get, %r|https://ec2\.amazonaws\.com/?.*Action=CreateSnapshot.*VolumeId=vol-44d6322d|, :body => fixture('ec2/create_snapshot'), :status => 200)
+
+        ec2.should_receive(:create_tags).with('snap-747c911d', :name => 'Test')
+      end
+
+      let(:result) { ec2.create_snapshot 'vol-44d6322d', :tags => {:name => 'Test'} }
 
       it "should return a snapshot" do
         result.should be_a(Awsum::Ec2::Snapshot)
@@ -36,6 +50,18 @@ module Awsum
       end
 
       let(:result) { ec2.snapshots }
+
+      it "should return a snapshot" do
+        result.first.should be_a(Awsum::Ec2::Snapshot)
+      end
+    end
+
+    describe "retrieving a list of snapshots with a filter" do
+      before do
+        FakeWeb.register_uri(:get, %r|https://ec2\.amazonaws\.com/?.*Action=DescribeSnapshots.*Filter.1.Name=Name.*Filter.1.Value.1=Test|, :body => fixture('ec2/snapshots'), :status => 200)
+      end
+
+      let(:result) { ec2.snapshots(:filter => {'Name' => 'Test'}) }
 
       it "should return a snapshot" do
         result.first.should be_a(Awsum::Ec2::Snapshot)

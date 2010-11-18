@@ -15,8 +15,8 @@ module Awsum
         end
 
         case tag
-          when 'snapshotSet'
-            @stack << 'snapshotSet'
+          when 'snapshotSet', 'tagSet'
+            @stack << tag
           when 'item', 'CreateSnapshotResponse'
             case @stack[-1]
               when 'snapshotSet'
@@ -34,7 +34,7 @@ module Awsum
         case tag
           when 'DescribeSnapshotsResponts'
             #no-op
-          when 'snapshotSet'
+          when 'snapshotSet', 'tagSet'
             @stack.pop
           when 'item', 'CreateSnapshotResponse'
             case @stack[-1]

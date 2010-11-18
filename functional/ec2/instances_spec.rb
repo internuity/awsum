@@ -22,7 +22,7 @@ functional "Instances" do
     wait_for volume, 'in-use'
 
     snapshot = run "taking a snapshot of volume #{volume.id}" do
-      volume.create_snapshot
+      volume.create_snapshot :tags => {'Name' => 'awsum.test'}
     end
     wait_for snapshot, 'completed'
 

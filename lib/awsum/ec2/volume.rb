@@ -61,8 +61,8 @@ module Awsum
       end
 
       # Creates a Snapshot of this Volume
-      def create_snapshot
-        @ec2.create_snapshot id
+      def create_snapshot(options = {})
+        @ec2.create_snapshot id, options
       end
 
       # Lists the Snapshot(s) of this Volume

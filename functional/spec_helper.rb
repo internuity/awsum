@@ -18,16 +18,39 @@ def functional(description, &block)
     instance_eval(&block)
 
     after(:all) do
-      #ec2.instances(:filter => {'instance-state-name' => ['running', 'stopped']},
-      #              :tags => {'Name' => 'awsum.test'}).each do |instance|
-      #  instance.terminate
-      #  wait_for instance, 'terminated'
-      #end
+      ec2.instances(:filter => {'instance-state-name' => ['running', 'stopped']},
+                    :tags => {'Name' => 'awsum.test'}).each do |instance|
+        begin
+          instance.terminate
+          wait_for instance, 'terminated'
+        rescue
+          puts "Could not terminate instance #{instance.id}"
+          puts $!.inspect
+          puts $!.backtrace
+        end
+      end
 
-      #ec2.volumes(:filter => {'status' => ['available', 'in-use']},
-      #            :tags => {'Name' => 'awsum.test'}).each do |volume|
-      #  volume.delete!
-      #end
+      ec2.volumes(:filter => {'status' => ['available', 'in-use']},
+                  :tags => {'Name' => 'awsum.test'}).each do |volume|
+        begin
+          volume.delete!
+        rescue
+          puts "Could not delete volume #{volume.id}"
+          puts $!.inspect
+          puts $!.backtrace
+        end
+      end
+
+      ec2.snapshots(:filter => {'status' => ['available', 'in-use']},
+                  :tags => {'Name' => 'awsum.test'}).each do |snapshot|
+        begin
+          snapshot.delete
+        rescue
+          puts "Could not delete snapshot #{snapshot.id}"
+          puts $!.inspect
+          puts $!.backtrace
+        end
+      end
     end
   end
 end
