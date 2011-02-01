@@ -25,7 +25,7 @@ begin
     gem.version  = Awsum::VERSION
 
     #gem.add_dependency
-    gem.add_development_dependency('rspec', '>= 2.0.0.beta.22')
+    gem.add_development_dependency('rspec', '>= 2.0.0')
   end
 
   Jeweler::GemcutterTasks.new
