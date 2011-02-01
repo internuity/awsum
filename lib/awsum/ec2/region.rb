@@ -30,15 +30,18 @@ module Awsum
       #     region.availability_zones
       #   end
       def use(&block)
-        old_host = @ec2.host
-        @ec2.host = end_point
         if block_given?
-          block.arity < 1 ? instance_eval(&block) : block[self]
+          begin
+            old_host = @ec2.host
+            @ec2.host = end_point
+            block.arity < 1 ? instance_eval(&block) : block[self]
+          ensure
+            @ec2.host = old_host
+          end
         else
+          @ec2.host = end_point
           self
         end
-      ensure
-        @ec2.host = old_host
       end
 
     private

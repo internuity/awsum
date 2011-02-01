@@ -28,6 +28,26 @@ module Awsum
       it "should return a region" do
         result.should be_a(Awsum::Ec2::Region)
       end
+
+      it "should work in block mode (with a supplied parameter)" do
+        FakeWeb.register_uri(:get, %r|https://eu-west-1\.ec2\.amazonaws\.com/?.*Action=DescribeAvailabilityZones|, :body => fixture('ec2/availability_zones'), :status => 200)
+
+        zones = ec2.region('eu-west-1') do |region|
+          region.availability_zones
+        end
+
+        zones.first.should be_a(Awsum::Ec2::AvailabilityZone)
+      end
+
+      it "should work in block mode (without a supplied parameter)" do
+        FakeWeb.register_uri(:get, %r|https://eu-west-1\.ec2\.amazonaws\.com/?.*Action=DescribeAvailabilityZones|, :body => fixture('ec2/availability_zones'), :status => 200)
+
+        zones = ec2.region('eu-west-1') do
+          availability_zones
+        end
+
+        zones.first.should be_a(Awsum::Ec2::AvailabilityZone)
+      end
     end
 
     describe "a region" do
@@ -46,7 +66,7 @@ module Awsum
       it "should work in block mode (with a supplied parameter)" do
         FakeWeb.register_uri(:get, %r|https://eu-west-1\.ec2\.amazonaws\.com/?.*Action=DescribeAvailabilityZones|, :body => fixture('ec2/availability_zones'), :status => 200)
 
-        zones = ec2.region('eu-west-1') do |region|
+        zones = region.use do |region|
           region.availability_zones
         end
 
@@ -56,9 +76,18 @@ module Awsum
       it "should work in block mode (without a supplied parameter)" do
         FakeWeb.register_uri(:get, %r|https://eu-west-1\.ec2\.amazonaws\.com/?.*Action=DescribeAvailabilityZones|, :body => fixture('ec2/availability_zones'), :status => 200)
 
-        zones = ec2.region('eu-west-1') do
+        zones = region.use do
           availability_zones
         end
+
+        zones.first.should be_a(Awsum::Ec2::AvailabilityZone)
+      end
+
+      it "should be able to set a region" do
+        FakeWeb.register_uri(:get, %r|https://eu-west-1\.ec2\.amazonaws\.com/?.*Action=DescribeAvailabilityZones|, :body => fixture('ec2/availability_zones'), :status => 200)
+
+        region.use
+        zones = ec2.availability_zones
 
         zones.first.should be_a(Awsum::Ec2::AvailabilityZone)
       end
