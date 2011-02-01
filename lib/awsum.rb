@@ -11,7 +11,7 @@ require 'awsum/requestable'
 require 'awsum/support'
 
 module Awsum
-  VERSION = "0.5"
+  VERSION = "0.5.1"
 
   API_VERSION = '2010-08-31'
   SIGNATURE_VERSION = 2
