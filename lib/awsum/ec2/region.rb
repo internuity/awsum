@@ -52,6 +52,10 @@ module Awsum
           @ec2.send(method_name, *args, &block)
         end
       end
+
+      def respond_to?(method_name, include_private = false)
+        @ec2.respond_to?(method_name, include_private) || super
+      end
     end
   end
 end
